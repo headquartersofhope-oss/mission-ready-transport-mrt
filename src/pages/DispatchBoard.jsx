@@ -56,31 +56,31 @@ function getHour(timeStr) {
 }
 
 function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict, onAutoAssign }) {
-  const [open, setOpen] = useState(false);
-  const [assigning, setAssigning] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState(ride.assigned_driver_id || '');
-  const [selectedVehicle, setSelectedVehicle] = useState(ride.assigned_vehicle_id || '');
-  const [autoAssigning, setAutoAssigning] = useState(false);
-  const navigate = useNavigate();
-  const conflictWarning = selectedDriver && selectedDriver !== ride.assigned_driver_id && wouldConflict?.(selectedDriver, ride.id, ride.request_date, ride.pickup_time);
+   const [open, setOpen] = useState(false);
+   const [assigning, setAssigning] = useState(false);
+   const [selectedDriver, setSelectedDriver] = useState(ride.assigned_driver_id || '');
+   const [selectedVehicle, setSelectedVehicle] = useState(ride.assigned_vehicle_id || '');
+   const [autoAssigning, setAutoAssigning] = useState(false);
+   const navigate = useNavigate();
+   const conflictWarning = selectedDriver && selectedDriver !== ride.assigned_driver_id && wouldConflict?.(selectedDriver, ride.id, ride.request_date, ride.pickup_time);
 
-  const sc = STATUS_CONFIG[ride.status] || STATUS_CONFIG.requested;
-  const terminal = ['completed', 'cancelled', 'no_show', 'denied'];
-  const isUnassigned = !ride.assigned_driver_name && !terminal.includes(ride.status);
-  const missingVehicle = !ride.assigned_vehicle_name && !terminal.includes(ride.status);
-  const missingTime = !ride.pickup_time && !terminal.includes(ride.status);
-  const incompleteCount = [isUnassigned, missingVehicle, missingTime].filter(Boolean).length;
-  const isActive = ['en_route', 'rider_picked_up', 'in_progress'].includes(ride.status);
+   const sc = STATUS_CONFIG[ride.status] || STATUS_CONFIG.requested;
+   const terminal = ['completed', 'cancelled', 'no_show', 'denied'];
+   const isUnassigned = !ride.assigned_driver_name && !terminal.includes(ride.status);
+   const missingVehicle = !ride.assigned_vehicle_name && !terminal.includes(ride.status);
+   const missingTime = !ride.pickup_time && !terminal.includes(ride.status);
+   const incompleteCount = [isUnassigned, missingVehicle, missingTime].filter(Boolean).length;
+   const isActive = ['en_route', 'rider_picked_up', 'in_progress'].includes(ride.status);
 
-  const handleAssign = async () => {
-    setAssigning(true);
-    await onAssign(ride.id, selectedDriver, selectedVehicle);
-    setAssigning(false);
-    setOpen(false);
-  };
+   const handleAssign = async () => {
+     setAssigning(true);
+     await onAssign(ride.id, selectedDriver, selectedVehicle);
+     setAssigning(false);
+     setOpen(false);
+   };
 
-  return (
-    <div className={`rounded-lg border-l-4 ${sc.border} ${sc.bg} ${PRIORITY_BORDER[ride.priority] || ''} p-3 text-sm transition-all hover:shadow-sm`}>
+   return (
+     <div className={`rounded-lg border-l-4 ${sc.border} ${sc.bg} ${PRIORITY_BORDER[ride.priority] || ''} p-4 text-sm transition-all hover:shadow-md border border-border/50`}>
       {/* Top row */}
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
@@ -434,9 +434,9 @@ export default function DispatchBoard() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Truck className="w-6 h-6 text-primary" /> Dispatch Board
+            <Truck className="w-6 h-6 text-primary" /> Dispatch Operations
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Real-time ride assignments, driver load, and vehicle utilization</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Assign, track, and optimize rides in real-time</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <input type="date" value={date} onChange={e => setDate(e.target.value)}
@@ -449,19 +449,19 @@ export default function DispatchBoard() {
       </div>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
+      <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
         {[
-          { label: 'Total Rides', val: summary.total, color: 'text-foreground', bg: 'bg-muted/50' },
-          { label: 'Unassigned', val: summary.unassigned, color: summary.unassigned > 0 ? 'text-red-600' : 'text-emerald-600', bg: summary.unassigned > 0 ? 'bg-red-500/8' : 'bg-emerald-500/8' },
-          { label: 'Live Now', val: summary.active, color: 'text-amber-600', bg: 'bg-amber-500/8' },
-          { label: 'Completed', val: summary.completed, color: 'text-emerald-600', bg: 'bg-emerald-500/8' },
-          { label: 'Urgent', val: summary.urgent, color: summary.urgent > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.urgent > 0 ? 'bg-red-500/8' : 'bg-muted/30' },
-          { label: 'Round Trips', val: summary.returnTrips, color: 'text-blue-600', bg: 'bg-blue-500/8' },
-          { label: 'Conflicts', val: summary.conflicts, color: summary.conflicts > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.conflicts > 0 ? 'bg-red-500/15' : 'bg-muted/30' },
+          { label: 'Total', val: summary.total, color: 'text-foreground', bg: 'bg-slate-500/8 border border-slate-200 dark:border-slate-700' },
+          { label: 'Unassigned', val: summary.unassigned, color: summary.unassigned > 0 ? 'text-red-600 font-bold' : 'text-emerald-600', bg: summary.unassigned > 0 ? 'bg-red-500/10 border border-red-300 dark:border-red-900' : 'bg-emerald-500/10 border border-emerald-300 dark:border-emerald-900' },
+          { label: 'Live', val: summary.active, color: 'text-amber-600 font-bold', bg: 'bg-amber-500/10 border border-amber-300 dark:border-amber-900' },
+          { label: 'Complete', val: summary.completed, color: 'text-emerald-600', bg: 'bg-emerald-500/10 border border-emerald-300 dark:border-emerald-900' },
+          { label: 'Urgent', val: summary.urgent, color: summary.urgent > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.urgent > 0 ? 'bg-red-500/10 border border-red-400 dark:border-red-900' : 'bg-muted/30 border border-border' },
+          { label: 'Roundtrips', val: summary.returnTrips, color: 'text-blue-600', bg: 'bg-blue-500/10 border border-blue-300 dark:border-blue-900' },
+          { label: 'Conflicts', val: summary.conflicts, color: summary.conflicts > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.conflicts > 0 ? 'bg-red-500/15 border border-red-400 dark:border-red-900' : 'bg-muted/30 border border-border' },
         ].map(s => (
-          <div key={s.label} className={`rounded-lg p-3 ${s.bg} text-center`}>
-            <p className={`text-xl font-bold ${s.color}`}>{s.val}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+          <div key={s.label} className={`rounded-lg p-4 text-center transition-all hover:shadow-md ${s.bg}`}>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.val}</p>
+            <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
           </div>
         ))}
       </div>

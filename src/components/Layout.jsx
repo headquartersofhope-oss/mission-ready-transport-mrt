@@ -75,9 +75,9 @@ export default function Layout() {
                 <div className="w-7 h-7 bg-sidebar-primary rounded-md flex items-center justify-center">
                   <Truck className="w-4 h-4 text-sidebar-primary-foreground" />
                 </div>
-                <h1 className="text-base font-bold tracking-tight text-white">HOH Transport</h1>
+                <h1 className="text-base font-bold tracking-tight text-white">MRT</h1>
               </div>
-              <p className="text-xs text-sidebar-foreground/50 mt-0.5 ml-9">Operations Platform</p>
+              <p className="text-xs text-sidebar-foreground/50 mt-0.5 ml-9">Mission Ready Transport</p>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-white">
               <X className="w-5 h-5" />

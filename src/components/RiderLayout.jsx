@@ -23,8 +23,8 @@ export default function RiderLayout() {
               <Navigation className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-sm">HOH Transport</h1>
-              <p className="text-xs text-muted-foreground">Rider Portal</p>
+               <h1 className="font-bold text-sm">MRT</h1>
+               <p className="text-xs text-muted-foreground">Mission Ready</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

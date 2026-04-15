@@ -211,9 +211,9 @@ export default function DriverPortal() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Driver Portal</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Driver Dispatch</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {driverProfile ? `Welcome, ${driverProfile.first_name}` : 'Your daily ride schedule'}
+            {driverProfile ? `Welcome, ${driverProfile.first_name}!` : 'Your daily ride schedule'}
           </p>
         </div>
         {driverProfile?.assigned_vehicle_name && (

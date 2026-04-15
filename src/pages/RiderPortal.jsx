@@ -104,10 +104,10 @@ export default function RiderPortal() {
   if (!participant) {
     return (
       <div className="space-y-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Rides</h1>
-          <p className="text-sm text-muted-foreground mt-1">View your scheduled transportation</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Your Rides</h1>
+        <p className="text-sm text-muted-foreground mt-2">View your scheduled transportation</p>
+      </div>
         <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
@@ -128,9 +128,9 @@ export default function RiderPortal() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Rides</h1>
-        <p className="text-sm text-muted-foreground mt-1">Welcome, {participant.first_name}</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Your Rides</h1>
+        <p className="text-sm text-muted-foreground mt-2">Welcome back, {participant.first_name}. See your scheduled trips below.</p>
       </div>
 
       {/* Notification Center */}
