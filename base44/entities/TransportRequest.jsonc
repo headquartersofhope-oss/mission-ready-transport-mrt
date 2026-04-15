@@ -12,6 +12,18 @@
       "type": "string",
       "format": "date"
     },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "client_transport",
+        "workforce_transport",
+        "medical_delivery",
+        "package_delivery",
+        "contract_route"
+      ],
+      "default": "client_transport",
+      "description": "Type of service requested"
+    },
     "pickup_time": {
       "type": "string"
     },
@@ -23,6 +35,35 @@
     },
     "dropoff_location": {
       "type": "string"
+    },
+    "package_type": {
+      "type": "string",
+      "enum": [
+        "documents",
+        "small_package",
+        "medium_package",
+        "large_package",
+        "fragile",
+        "medical_supplies",
+        "perishable",
+        "hazmat",
+        "person"
+      ],
+      "description": "Type of item being transported"
+    },
+    "handling_instructions": {
+      "type": "string",
+      "description": "Special handling notes for deliveries"
+    },
+    "chain_of_custody_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether chain-of-custody documentation is required"
+    },
+    "signature_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether recipient signature is required"
     },
     "return_trip": {
       "type": "boolean",
@@ -102,7 +143,12 @@
         "no_show",
         "incident_review",
         "in_progress",
-        "assigned"
+        "assigned",
+        "ready_for_pickup",
+        "picked_up",
+        "in_transit",
+        "delivered",
+        "confirmed"
       ],
       "default": "requested"
     },
@@ -144,9 +190,55 @@
         "recovery_treatment",
         "benefits_services",
         "emergency",
+        "delivery_logistics",
         "other"
       ],
       "description": "Operational program category for cost grouping"
+    },
+    "time_block": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "midday",
+        "afternoon",
+        "evening",
+        "flexible"
+      ],
+      "default": "flexible",
+      "description": "Time block assignment for routing"
+    },
+    "route_sequence": {
+      "type": "number",
+      "description": "Position in optimized route for deliveries"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "Reference to batched delivery route"
+    },
+    "job_value": {
+      "type": "number",
+      "description": "Revenue value of this job"
+    },
+    "contract_reference": {
+      "type": "string",
+      "description": "Contract or agreement reference"
+    },
+    "billing_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "approved",
+        "invoiced",
+        "paid"
+      ],
+      "default": "draft",
+      "description": "Billing status for revenue tracking"
+    },
+    "invoice_ready": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this job is ready for invoicing"
     },
     "estimated_cost": {
       "type": "number"
@@ -174,6 +266,7 @@
         "church_donor_sponsored",
         "client_paid",
         "emergency_support_fund",
+        "contract_revenue",
         "other"
       ],
       "description": "Category of funding source"
@@ -216,10 +309,8 @@
     }
   },
   "required": [
-    "participant_name",
     "request_date",
     "pickup_location",
-    "dropoff_location",
-    "purpose"
+    "dropoff_location"
   ]
 }

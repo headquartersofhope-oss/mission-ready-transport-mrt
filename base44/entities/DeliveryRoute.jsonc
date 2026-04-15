@@ -1,0 +1,126 @@
+{
+  "name": "DeliveryRoute",
+  "type": "object",
+  "properties": {
+    "route_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "driver_id": {
+      "type": "string"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "vehicle_id": {
+      "type": "string"
+    },
+    "vehicle_name": {
+      "type": "string"
+    },
+    "route_type": {
+      "type": "string",
+      "enum": [
+        "package_delivery",
+        "medical_delivery",
+        "contract_route"
+      ],
+      "description": "Type of delivery route"
+    },
+    "stops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stop_sequence": {
+            "type": "number"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "pickup_location": {
+            "type": "string"
+          },
+          "dropoff_location": {
+            "type": "string"
+          },
+          "package_type": {
+            "type": "string"
+          },
+          "scheduled_pickup_time": {
+            "type": "string"
+          },
+          "scheduled_dropoff_time": {
+            "type": "string"
+          },
+          "actual_pickup_time": {
+            "type": "string"
+          },
+          "actual_dropoff_time": {
+            "type": "string"
+          },
+          "signature_obtained": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ordered list of delivery stops"
+    },
+    "route_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "planned"
+    },
+    "total_estimated_duration": {
+      "type": "number",
+      "description": "Estimated total drive time in minutes"
+    },
+    "total_actual_duration": {
+      "type": "number",
+      "description": "Actual total drive time in minutes"
+    },
+    "total_distance_miles": {
+      "type": "number"
+    },
+    "deliveries_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "deliveries_failed": {
+      "type": "number",
+      "default": 0
+    },
+    "route_optimized": {
+      "type": "boolean",
+      "default": false
+    },
+    "optimization_savings_minutes": {
+      "type": "number",
+      "description": "Minutes saved through route optimization"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "route_date",
+    "driver_id",
+    "vehicle_id",
+    "route_type",
+    "stops"
+  ]
+}

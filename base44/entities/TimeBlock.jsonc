@@ -1,0 +1,73 @@
+{
+  "name": "TimeBlock",
+  "type": "object",
+  "properties": {
+    "block_name": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "midday",
+        "afternoon",
+        "evening"
+      ],
+      "description": "Standard time block name"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Start time in HH:MM format"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "End time in HH:MM format"
+    },
+    "allowed_service_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "client_transport",
+          "workforce_transport",
+          "medical_delivery",
+          "package_delivery",
+          "contract_route"
+        ]
+      },
+      "description": "Service types allowed in this time block"
+    },
+    "priority_service_type": {
+      "type": "string",
+      "enum": [
+        "client_transport",
+        "workforce_transport",
+        "medical_delivery",
+        "package_delivery",
+        "contract_route"
+      ],
+      "description": "Primary service type for this block"
+    },
+    "max_concurrent_jobs": {
+      "type": "number",
+      "description": "Maximum jobs allowed simultaneously in this block"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this time block is enabled"
+    },
+    "days_of_week": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Days this block applies (monday, tuesday, etc.)"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "block_name",
+    "start_time",
+    "end_time"
+  ]
+}
