@@ -64,11 +64,11 @@ export default function Providers() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transport Providers</h1>
-          <p className="text-sm text-muted-foreground mt-1">{providers.length} providers registered</p>
+          <h1 className="text-3xl font-bold tracking-tight">Transport Providers</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">{providers.length} providers registered</p>
         </div>
         <Button onClick={() => { setSelected(null); setView('form'); }} className="gap-2">
           <Plus className="w-4 h-4" /> Add Provider

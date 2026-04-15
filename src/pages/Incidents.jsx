@@ -77,42 +77,42 @@ export default function Incidents() {
   const critical = incidents.filter(i => i.severity === 'critical' || i.severity === 'high');
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Incident Log</h1>
-          <p className="text-sm text-muted-foreground mt-1">{open.length} open · {escalated.length} escalated · {critical.length} high/critical</p>
+          <h1 className="text-3xl font-bold tracking-tight">Incident Log</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">{open.length} open · {escalated.length} escalated · {critical.length} high/critical</p>
         </div>
         <Button onClick={() => { setSelected(null); setView('form'); }} className="gap-2">
           <Plus className="w-4 h-4" /> Log Incident
         </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-500" />
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="p-5 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{open.length}</p>
-              <p className="text-xs text-muted-foreground">Open Incidents</p>
+              <p className="text-2xl font-bold">{open.length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Open</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-purple-500" />
+        <Card className="p-5 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-purple-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{escalated.length}</p>
-              <p className="text-xs text-muted-foreground">Escalated</p>
+              <p className="text-2xl font-bold">{escalated.length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Escalated</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-amber-500" />
+        <Card className="p-5 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{critical.length}</p>
-              <p className="text-xs text-muted-foreground">High / Critical</p>
+              <p className="text-2xl font-bold">{critical.length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">High / Critical</p>
             </div>
           </div>
         </Card>

@@ -100,11 +100,11 @@ export default function Requests() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ride Requests</h1>
-          <p className="text-sm text-muted-foreground mt-1">{filtered.length} of {requests.length} requests shown</p>
+          <h1 className="text-3xl font-bold tracking-tight">Ride Requests</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">{filtered.length} of {requests.length} requests shown</p>
         </div>
         <Button onClick={() => { setSelectedRequest(null); setView('form'); }} className="gap-2">
           <Plus className="w-4 h-4" /> New Request
@@ -112,20 +112,20 @@ export default function Requests() {
       </div>
 
       {/* Status Group Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(counts).map(([key, count]) => (
-          <button
-            key={key}
-            onClick={() => setStatusGroup(key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all capitalize
-              ${statusGroup === key 
-                ? 'bg-primary text-primary-foreground border-primary' 
-                : 'bg-card border-border text-muted-foreground hover:border-primary/50'}`}
-          >
-            {key.replace(/_/g, ' ')} <span className="ml-1 opacity-70">{count}</span>
-          </button>
-        ))}
-      </div>
+       <div className="flex flex-wrap gap-2.5">
+         {Object.entries(counts).map(([key, count]) => (
+           <button
+             key={key}
+             onClick={() => setStatusGroup(key)}
+             className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all capitalize shadow-sm
+               ${statusGroup === key 
+                 ? 'bg-primary text-primary-foreground border-primary shadow-md' 
+                 : 'bg-card border-border/60 text-muted-foreground hover:border-primary/50 hover:shadow-sm'}`}
+           >
+             {key.replace(/_/g, ' ')} <span className="ml-1.5 opacity-75 font-medium">{count}</span>
+           </button>
+         ))}
+       </div>
 
       {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-2">

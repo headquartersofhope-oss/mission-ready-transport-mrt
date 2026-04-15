@@ -75,11 +75,11 @@ export default function Drivers() {
   const onDuty = drivers.filter(d => d.availability === 'on_duty');
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Driver Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">{activeDrivers.length} active drivers · {onDuty.length} on duty today</p>
+          <h1 className="text-3xl font-bold tracking-tight">Driver Management</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">{activeDrivers.length} active drivers · {onDuty.length} on duty today</p>
         </div>
         <Button onClick={() => { setSelected(null); setView('form'); }} className="gap-2">
           <Plus className="w-4 h-4" /> Add Driver

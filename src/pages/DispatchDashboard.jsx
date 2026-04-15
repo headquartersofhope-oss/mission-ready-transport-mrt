@@ -28,14 +28,14 @@ function StatCard({ label, value, icon: Icon, color, subtext, onClick }) {
     cyan: 'bg-cyan-500/12 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400',
   };
   return (
-    <Card className={`p-5 border-0 shadow-card hover:shadow-md transition-all duration-200 ${onClick ? 'cursor-pointer hover:shadow-lg' : ''}`} onClick={onClick}>
-      <div className="flex items-start justify-between">
+    <Card className={`p-6 shadow-sm hover:shadow-md transition-all duration-200 ${onClick ? 'cursor-pointer hover:border-primary/50' : ''}`} onClick={onClick}>
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-3xl font-bold mt-2 tracking-tight">{value}</p>
-          {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold mt-3 tracking-tight">{value}</p>
+          {subtext && <p className="text-xs text-muted-foreground mt-2">{subtext}</p>}
         </div>
-        <div className={`p-2.5 rounded-lg ml-3 shrink-0 ${colorMap[color] || colorMap.slate}`}>
+        <div className={`p-3 rounded-lg ml-3 shrink-0 ${colorMap[color] || colorMap.slate}`}>
           <Icon className="w-5 h-5" />
         </div>
       </div>
@@ -78,16 +78,16 @@ function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
   if (insuranceExpiring.length) alerts.push({ text: `${insuranceExpiring.length} vehicle insurance${insuranceExpiring.length > 1 ? 's' : ''} expire within 30 days`, color: 'amber' });
 
   if (alerts.length === 0) return (
-    <div className="flex items-center gap-2 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-      <p className="text-sm text-emerald-700 font-medium">All systems operational — no active alerts</p>
+    <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg shadow-sm">
+      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+      <p className="text-sm font-semibold text-emerald-700">All systems operational — no active alerts</p>
     </div>
   );
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {alerts.map((alert, i) => (
-        <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border text-sm font-medium
+        <div key={i} className={`flex items-start gap-3 p-4 rounded-lg border text-sm font-semibold shadow-sm
           ${alert.color === 'red' ? 'bg-red-500/10 border-red-500/30 text-red-700' : 'bg-amber-500/10 border-amber-500/30 text-amber-700'}`}>
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{alert.text}</span>
@@ -187,11 +187,11 @@ export default function DispatchDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">Dispatch Operations</h1>
-          <p className="text-sm text-muted-foreground mt-2">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
-        </div>
+       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-2">
+         <div>
+           <h1 className="text-4xl font-bold tracking-tight">Dispatch Operations</h1>
+           <p className="text-sm font-medium text-muted-foreground mt-2">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <input

@@ -69,11 +69,11 @@ export default function Vehicles() {
   const maintenance = vehicles.filter(v => v.service_status === 'maintenance' || v.service_status === 'out_of_service');
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vehicle Fleet</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">
             {available.length} available · {inUse.length} in use · {maintenance.length} in maintenance
           </p>
         </div>
@@ -82,40 +82,40 @@ export default function Vehicles() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-4 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setFilter('available')}>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-5 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all shadow-sm" onClick={() => setFilter('available')}>
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{available.length}</p>
-              <p className="text-xs text-muted-foreground">Available</p>
+              <p className="text-2xl font-bold">{available.length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Available</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setFilter('in_use')}>
-          <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-blue-500" />
+        <Card className="p-5 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all shadow-sm" onClick={() => setFilter('in_use')}>
+          <div className="flex items-center gap-3">
+            <Truck className="w-5 h-5 text-blue-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{inUse.length}</p>
-              <p className="text-xs text-muted-foreground">In Use</p>
+              <p className="text-2xl font-bold">{inUse.length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">In Use</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setFilter('maintenance')}>
-          <div className="flex items-center gap-2">
-            <Wrench className="w-5 h-5 text-amber-500" />
+        <Card className="p-5 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all shadow-sm" onClick={() => setFilter('maintenance')}>
+          <div className="flex items-center gap-3">
+            <Wrench className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{vehicles.filter(v => v.service_status === 'maintenance').length}</p>
-              <p className="text-xs text-muted-foreground">Maintenance</p>
+              <p className="text-2xl font-bold">{vehicles.filter(v => v.service_status === 'maintenance').length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Maintenance</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setFilter('out_of_service')}>
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
+        <Card className="p-5 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all shadow-sm" onClick={() => setFilter('out_of_service')}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
             <div>
-              <p className="text-xl font-bold">{vehicles.filter(v => v.service_status === 'out_of_service').length}</p>
-              <p className="text-xs text-muted-foreground">Out of Service</p>
+              <p className="text-2xl font-bold">{vehicles.filter(v => v.service_status === 'out_of_service').length}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Out of Service</p>
             </div>
           </div>
         </Card>

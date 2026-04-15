@@ -80,11 +80,11 @@ export default function Participants() {
   const highNoShow = participants.filter(p => (p.no_show_count || 0) >= 3);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Client Directory</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold tracking-tight">Client Directory</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-2">
             {activeCount} active · {suspendedCount} suspended · {highNoShow.length} with 3+ no-shows
           </p>
         </div>
