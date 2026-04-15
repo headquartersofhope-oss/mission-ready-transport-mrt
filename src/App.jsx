@@ -19,6 +19,7 @@ import Vehicles from './pages/Vehicles';
 import Incidents from './pages/Incidents';
 import DriverPortal from './pages/DriverPortal';
 import AuditCenter from './pages/AuditCenter';
+import AiIntelligence from './pages/AiIntelligence';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
         <Route path="/driver-portal" element={<DriverPortal />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<AuditCenter />} />
+        <Route path="/ai-intelligence" element={<AiIntelligence />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
