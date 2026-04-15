@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import DispatchBoardHeader from '@/components/dispatch/DispatchBoardHeader';
+import DispatchSummaryBar from '@/components/dispatch/DispatchSummaryBar';
 
 const TIME_BLOCKS = [
   { id: 'early', label: 'Early Morning', range: 'Before 7:00 AM', start: 0, end: 7 },
@@ -429,55 +431,16 @@ export default function DispatchBoard() {
   const uniqueDriverNames = [...new Set(allRequests.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name))];
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Truck className="w-6 h-6 text-primary" /> Dispatch Operations
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Assign, track, and optimize rides in real-time</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="h-9 px-3 rounded-md border border-input bg-transparent text-sm" />
-          <Button size="sm" variant="outline" onClick={() => setDate(today)}>Today</Button>
-          <Button size="sm" variant="outline" onClick={() => setDate(format(addDays(new Date(date), 1), 'yyyy-MM-dd'))}>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary bar */}
-      <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-        {[
-          { label: 'Total', val: summary.total, color: 'text-foreground', bg: 'bg-slate-500/8 border border-slate-200 dark:border-slate-700' },
-          { label: 'Unassigned', val: summary.unassigned, color: summary.unassigned > 0 ? 'text-red-600 font-bold' : 'text-emerald-600', bg: summary.unassigned > 0 ? 'bg-red-500/10 border border-red-300 dark:border-red-900' : 'bg-emerald-500/10 border border-emerald-300 dark:border-emerald-900' },
-          { label: 'Live', val: summary.active, color: 'text-amber-600 font-bold', bg: 'bg-amber-500/10 border border-amber-300 dark:border-amber-900' },
-          { label: 'Complete', val: summary.completed, color: 'text-emerald-600', bg: 'bg-emerald-500/10 border border-emerald-300 dark:border-emerald-900' },
-          { label: 'Urgent', val: summary.urgent, color: summary.urgent > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.urgent > 0 ? 'bg-red-500/10 border border-red-400 dark:border-red-900' : 'bg-muted/30 border border-border' },
-          { label: 'Roundtrips', val: summary.returnTrips, color: 'text-blue-600', bg: 'bg-blue-500/10 border border-blue-300 dark:border-blue-900' },
-          { label: 'Conflicts', val: summary.conflicts, color: summary.conflicts > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.conflicts > 0 ? 'bg-red-500/15 border border-red-400 dark:border-red-900' : 'bg-muted/30 border border-border' },
-        ].map(s => (
-          <div key={s.label} className={`rounded-lg p-4 text-center transition-all hover:shadow-md ${s.bg}`}>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.val}</p>
-            <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-          </div>
-        ))}
-      </div>
-      {driverConflictNames.length > 0 && (
-        <div className="flex items-center gap-2 p-2.5 bg-red-500/8 border border-red-400/30 rounded-lg text-xs text-red-600 font-medium">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          Double-booking conflict: {driverConflictNames.join(', ')} — expand those rides to resolve
-        </div>
-      )}
+    <div className="space-y-6">
+      <DispatchBoardHeader date={date} onDateChange={setDate} onToday={() => setDate(today)} />
+      <DispatchSummaryBar summary={summary} conflictNames={driverConflictNames} />
 
       {/* Filters + View Switcher + AI Tools */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-md border border-input overflow-hidden text-sm">
+      <div className="flex flex-wrap items-center gap-3 pb-2">
+        <div className="flex rounded-lg border border-border overflow-hidden text-sm bg-card">
           {[['time', 'Time Blocks'], ['driver', 'By Driver'], ['vehicle', 'By Vehicle']].map(([v, l]) => (
             <button key={v} onClick={() => setViewMode(v)}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === v ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
+              className={`px-3.5 py-2 text-xs font-semibold transition-colors ${viewMode === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
               {l}
             </button>
           ))}

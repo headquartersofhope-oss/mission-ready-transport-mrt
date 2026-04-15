@@ -103,18 +103,18 @@ export default function RiderPortal() {
 
   if (!participant) {
     return (
-      <div className="space-y-5">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Your Rides</h1>
-        <p className="text-sm text-muted-foreground mt-2">View your scheduled transportation</p>
-      </div>
-        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+      <div className="space-y-6">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight">Your Rides</h1>
+          <p className="text-sm text-muted-foreground mt-2">View your scheduled transportation</p>
+        </div>
+        <Card className="border-0 bg-amber-50/50 dark:bg-amber-950/10 shadow-card">
           <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-4">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium text-amber-900 dark:text-amber-200">Rider profile not found</p>
-                <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">
+                <p className="font-semibold text-amber-900 dark:text-amber-200">Rider profile not found</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300 mt-2">
                   Your email ({currentUser.email}) doesn't match any client record yet. Please contact support to link your account.
                 </p>
               </div>
@@ -126,11 +126,11 @@ export default function RiderPortal() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Your Rides</h1>
-        <p className="text-sm text-muted-foreground mt-2">Welcome back, {participant.first_name}. See your scheduled trips below.</p>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight">Your Rides</h1>
+        <p className="text-sm text-muted-foreground mt-3">Welcome back, <span className="font-semibold text-foreground">{participant.first_name}</span>. See your scheduled trips below.</p>
       </div>
 
       {/* Notification Center */}
@@ -140,20 +140,20 @@ export default function RiderPortal() {
 
       {/* Tabs */}
       <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upcoming" className="relative">
+        <TabsList className="grid w-full grid-cols-3 h-auto bg-transparent border-b border-border rounded-none p-0 gap-4">
+          <TabsTrigger value="upcoming" className="relative rounded-none border-b-2 data-[state=active]:border-primary data-[state=inactive]:border-transparent pb-3">
             Upcoming
             {upcomingRides.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">{upcomingRides.length}</Badge>
+              <Badge className="ml-2 text-xs">{upcomingRides.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="completed">
+          <TabsTrigger value="completed" className="relative rounded-none border-b-2 data-[state=active]:border-primary data-[state=inactive]:border-transparent pb-3">
             Completed
             {completedRides.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">{completedRides.length}</Badge>
+              <Badge className="ml-2 text-xs">{completedRides.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="issues">
+          <TabsTrigger value="issues" className="relative rounded-none border-b-2 data-[state=active]:border-primary data-[state=inactive]:border-transparent pb-3">
             Issues
             {issueRides.length > 0 && (
               <Badge variant="destructive" className="ml-2 text-xs">{issueRides.length}</Badge>
@@ -162,7 +162,7 @@ export default function RiderPortal() {
         </TabsList>
 
         {/* Upcoming Rides */}
-        <TabsContent value="upcoming" className="space-y-4 mt-6">
+        <TabsContent value="upcoming" className="space-y-4 mt-8">
           {upcomingRides.length === 0 ? (
             <Card className="p-12 text-center">
               <CheckCircle2 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
@@ -177,7 +177,7 @@ export default function RiderPortal() {
         </TabsContent>
 
         {/* Completed Rides */}
-        <TabsContent value="completed" className="space-y-4 mt-6">
+        <TabsContent value="completed" className="space-y-4 mt-8">
           {completedRides.length === 0 ? (
             <Card className="p-12 text-center">
               <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
@@ -192,7 +192,7 @@ export default function RiderPortal() {
         </TabsContent>
 
         {/* Issues */}
-        <TabsContent value="issues" className="space-y-4 mt-6">
+        <TabsContent value="issues" className="space-y-4 mt-8">
           {issueRides.length === 0 ? (
             <Card className="p-12 text-center">
               <CheckCircle2 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
@@ -208,9 +208,9 @@ export default function RiderPortal() {
       </Tabs>
 
       {/* Support footer */}
-      <div className="mt-8 pt-6 border-t border-border">
+      <div className="mt-12 pt-8 border-t border-border/50">
         <p className="text-xs text-muted-foreground text-center">
-          Need help? Contact support or call {participant.emergency_contact_phone || 'the support line'} for assistance.
+          Need help? Contact support or call <span className="font-semibold">{participant.emergency_contact_phone || 'the support line'}</span> for assistance.
         </p>
       </div>
     </div>

@@ -71,12 +71,12 @@ export default function Layout() {
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-64 
         bg-sidebar text-sidebar-foreground
-        flex flex-col border-r border-sidebar-border
+        flex flex-col border-r border-sidebar-border/40
         transition-transform duration-300 ease-in-out
         overflow-hidden
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-4 border-b border-sidebar-border/60 bg-gradient-to-r from-sidebar-accent/20 to-transparent">
+        <div className="p-5 border-b border-sidebar-border/40 bg-gradient-to-r from-sidebar-accent/10 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -84,8 +84,8 @@ export default function Layout() {
                   <Truck className="w-4 h-4 text-sidebar-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-base font-bold tracking-tight text-white">MRT</h1>
-                  <p className="text-xs text-sidebar-foreground/50">Mission Ready Transport</p>
+                <h1 className="text-sm font-bold tracking-tight text-white">MRT</h1>
+                <p className="text-xs text-sidebar-foreground/60 font-medium">Mission Ready</p>
                 </div>
               </div>
             </div>
@@ -95,14 +95,14 @@ export default function Layout() {
           </div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
           {navSections.map(section => {
             const visibleItems = section.items.filter(item => canAccessPage(currentUser?.role, item.path));
             if (visibleItems.length === 0) return null; // Hide entire section if no items are accessible
             
             return (
               <div key={section.label}>
-                <p className="text-xs font-semibold text-sidebar-foreground/40 uppercase tracking-widest px-3 mb-2">{section.label}</p>
+                <p className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider px-3 mb-3">{section.label}</p>
                 <div className="space-y-0.5">
                   {visibleItems.map(item => {
                     const isActive = location.pathname === item.path;
@@ -115,7 +115,7 @@ export default function Layout() {
                           flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                           ${isActive 
                             ? 'bg-sidebar-accent text-white shadow-sm' 
-                            : 'text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/40'}
+                            : 'text-sidebar-foreground/60 hover:text-sidebar-foreground/90 hover:bg-sidebar-accent/30'}
                         `}
                       >
                         <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-sidebar-primary' : ''}`} />
@@ -130,9 +130,9 @@ export default function Layout() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border/60 bg-sidebar-accent/10">
+        <div className="p-4 border-t border-sidebar-border/40 bg-sidebar-accent/5">
           {currentUser && (
-            <div className="px-3 py-2 mb-2 rounded-lg bg-sidebar-accent/20">
+            <div className="px-3 py-2 mb-3 rounded-lg bg-sidebar-accent/10 border border-sidebar-accent/20">
               <p className="text-xs font-semibold text-white truncate">{currentUser.full_name}</p>
               <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5">{currentUser.email}</p>
               {currentUser.role && (
@@ -153,7 +153,7 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-4 lg:px-6 h-14 flex items-center justify-between gap-4 shadow-sm">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 lg:px-6 h-14 flex items-center justify-between gap-4 shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground/60 hover:text-foreground">
             <Menu className="w-5 h-5" />
           </button>
@@ -162,7 +162,7 @@ export default function Layout() {
             {new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="flex-1 p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

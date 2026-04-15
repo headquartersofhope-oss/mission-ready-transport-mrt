@@ -277,17 +277,17 @@ export default function DriverBoard() {
 
   if (!driverProfile) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Driver Board</h1>
-          <p className="text-sm text-muted-foreground">Your daily ride schedule and action panel</p>
+          <h1 className="text-4xl font-bold tracking-tight">Driver Board</h1>
+          <p className="text-sm text-muted-foreground mt-2">Your daily ride schedule and action panel</p>
         </div>
-        <Card className="p-6 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
+        <Card className="p-6 border-0 bg-amber-50/50 dark:bg-amber-950/10 shadow-card">
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold text-amber-700">Driver profile not linked</p>
-              <p className="text-sm text-amber-600 mt-1">Your account ({currentUser?.email}) is not linked to a driver profile. Ask an admin to set your email in Driver Management under "Linked User Email".</p>
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Driver profile not linked</p>
+              <p className="text-sm text-amber-800 dark:text-amber-300 mt-2">Your account ({currentUser?.email}) is not linked to a driver profile. Ask an admin to set your email in Driver Management under "Linked User Email".</p>
             </div>
           </div>
         </Card>
@@ -296,19 +296,19 @@ export default function DriverBoard() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Driver Board</h1>
-          <p className="text-sm text-muted-foreground">Welcome, {driverProfile.first_name} — {format(new Date(), 'EEEE, MMM d')}</p>
+          <h1 className="text-4xl font-bold tracking-tight">Driver Board</h1>
+          <p className="text-sm text-muted-foreground mt-2">Welcome, <span className="font-semibold text-foreground">{driverProfile.first_name}</span> — {format(new Date(), 'EEEE, MMM d')}</p>
         </div>
         {driverProfile.assigned_vehicle_name && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg border border-primary/20">
-            <Car className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 rounded-lg border border-primary/20 shadow-sm">
+            <Car className="w-5 h-5 text-primary shrink-0" />
             <div>
-              <p className="text-xs text-muted-foreground">Your Vehicle</p>
-              <p className="text-sm font-semibold">{driverProfile.assigned_vehicle_name}</p>
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Vehicle</p>
+              <p className="text-sm font-bold text-foreground">{driverProfile.assigned_vehicle_name}</p>
             </div>
           </div>
         )}
@@ -318,23 +318,23 @@ export default function DriverBoard() {
       <LocationPermissionPrompt />
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'Total', val: displayRides.length, color: 'text-foreground' },
           { label: 'Remaining', val: pendingRides.length, color: 'text-amber-600' },
           { label: 'Completed', val: completedRides.length, color: 'text-emerald-600' },
           { label: 'On-Time Rate', val: `${driverProfile.on_time_rate || 100}%`, color: 'text-blue-600' },
         ].map(s => (
-          <div key={s.label} className="bg-muted/40 rounded-lg p-3 text-center">
-            <p className={`text-xl font-bold ${s.color}`}>{s.val}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+          <div key={s.label} className="bg-card border border-border/50 shadow-card rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+            <p className={`text-2xl font-bold ${s.color}`}>{s.val}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mt-1">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Next Up Banner */}
       {nextRide && activeDay === 'today' && (
-        <div className="p-4 rounded-xl bg-primary text-primary-foreground flex items-start gap-3">
+        <div className="p-5 rounded-xl bg-gradient-to-br from-primary to-primary/90 text-primary-foreground flex items-start gap-4 shadow-lg">
           <Navigation className="w-5 h-5 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-xs font-bold uppercase tracking-wide opacity-70">Next Pickup</p>
@@ -371,7 +371,7 @@ export default function DriverBoard() {
       </div>
 
       {/* Shift Info */}
-      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg">
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground p-4 bg-card border border-border/50 shadow-card rounded-lg">
         {driverProfile.shift_schedule && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />Shift: {driverProfile.shift_schedule}</span>}
         {driverProfile.service_area && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />Area: {driverProfile.service_area}</span>}
         {driverProfile.phone && (

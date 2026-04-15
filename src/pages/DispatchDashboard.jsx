@@ -19,24 +19,24 @@ import { format } from 'date-fns';
 
 function StatCard({ label, value, icon: Icon, color, subtext, onClick }) {
   const colorMap = {
-    blue: 'bg-blue-500/10 text-blue-600',
-    amber: 'bg-amber-500/10 text-amber-600',
-    emerald: 'bg-emerald-500/10 text-emerald-600',
-    red: 'bg-red-500/10 text-red-600',
-    purple: 'bg-purple-500/10 text-purple-600',
-    slate: 'bg-slate-500/10 text-slate-600',
-    cyan: 'bg-cyan-500/10 text-cyan-600',
+    blue: 'bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+    amber: 'bg-amber-500/12 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
+    emerald: 'bg-emerald-500/12 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
+    red: 'bg-red-500/12 text-red-600 dark:bg-red-500/20 dark:text-red-400',
+    purple: 'bg-purple-500/12 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400',
+    slate: 'bg-slate-500/12 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
+    cyan: 'bg-cyan-500/12 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400',
   };
   return (
-    <Card className={`p-4 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
+    <Card className={`p-5 border-0 shadow-card hover:shadow-md transition-all duration-200 ${onClick ? 'cursor-pointer hover:shadow-lg' : ''}`} onClick={onClick}>
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {subtext && <p className="text-xs text-muted-foreground mt-0.5">{subtext}</p>}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
+          <p className="text-3xl font-bold mt-2 tracking-tight">{value}</p>
+          {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
         </div>
-        <div className={`p-2 rounded-lg ${colorMap[color] || colorMap.slate}`}>
-          <Icon className="w-4 h-4" />
+        <div className={`p-2.5 rounded-lg ml-3 shrink-0 ${colorMap[color] || colorMap.slate}`}>
+          <Icon className="w-5 h-5" />
         </div>
       </div>
     </Card>
@@ -78,19 +78,19 @@ function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
   if (insuranceExpiring.length) alerts.push({ text: `${insuranceExpiring.length} vehicle insurance${insuranceExpiring.length > 1 ? 's' : ''} expire within 30 days`, color: 'amber' });
 
   if (alerts.length === 0) return (
-    <div className="flex items-center gap-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-      <p className="text-sm text-emerald-600 font-medium">All systems operational — no active alerts</p>
+    <div className="flex items-center gap-2 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+      <p className="text-sm text-emerald-700 font-medium">All systems operational — no active alerts</p>
     </div>
   );
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {alerts.map((alert, i) => (
-        <div key={i} className={`flex items-center gap-2 p-2.5 rounded-lg border text-sm font-medium
-          ${alert.color === 'red' ? 'bg-red-500/8 border-red-500/20 text-red-600' : 'bg-amber-500/8 border-amber-500/20 text-amber-700'}`}>
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          {alert.text}
+        <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border text-sm font-medium
+          ${alert.color === 'red' ? 'bg-red-500/10 border-red-500/30 text-red-700' : 'bg-amber-500/10 border-amber-500/30 text-amber-700'}`}>
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{alert.text}</span>
         </div>
       ))}
     </div>
@@ -185,23 +185,23 @@ export default function DispatchDashboard() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dispatch Operations</h1>
-          <p className="text-sm text-muted-foreground mt-1">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+          <h1 className="text-4xl font-bold tracking-tight">Dispatch Operations</h1>
+          <p className="text-sm text-muted-foreground mt-2">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <input
             type="date"
             value={dateFilter}
             onChange={e => setDateFilter(e.target.value)}
-            className="h-9 px-3 rounded-md border border-input bg-transparent text-sm"
+            className="h-10 px-3 rounded-lg border border-input bg-card text-sm transition-colors hover:border-input/80 focus:border-primary"
           />
           <Select value={driverFilter} onValueChange={setDriverFilter}>
-            <SelectTrigger className="w-40 h-9">
+            <SelectTrigger className="w-40 h-10">
               <SelectValue placeholder="All Drivers" />
             </SelectTrigger>
             <SelectContent>
@@ -223,8 +223,8 @@ export default function DispatchDashboard() {
 
       {/* Today's KPI Grid */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Day Snapshot — {dateFilter}</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Day Snapshot — {dateFilter}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatCard label="Total Rides" value={stats.dateRides.length} icon={Clock} color="blue" subtext={dateFilter} />
           <StatCard label="Dispatched" value={stats.assignedToday.length} icon={Truck} color="purple" onClick={() => navigate('/dispatch-board')} />
           <StatCard label="Needs Assignment" value={stats.unassignedToday.length} icon={AlertTriangle} color="amber" onClick={() => navigate('/dispatch-board')} />
@@ -236,8 +236,8 @@ export default function DispatchDashboard() {
 
       {/* Fleet & Workforce */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Fleet & Workforce</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Fleet & Workforce</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           <StatCard label="Active Drivers" value={stats.activeDrivers.length} icon={Users} color="emerald" onClick={() => navigate('/drivers')} />
           <StatCard label="Available Now" value={stats.onDutyDrivers.length} icon={Activity} color="blue" onClick={() => navigate('/drivers')} />
           <StatCard label="Vehicles Ready" value={stats.availableVehicles.length} icon={Car} color="emerald" onClick={() => navigate('/vehicles')} />
@@ -248,8 +248,8 @@ export default function DispatchDashboard() {
 
       {/* Program-level Metrics */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Program Metrics</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Program Metrics</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Needs Review" value={stats.pending.length} icon={Eye} color="amber" onClick={() => navigate('/requests')} />
           <StatCard label="High / Urgent" value={stats.highPriority.length} icon={Zap} color="red" onClick={() => navigate('/requests')} subtext="open rides" />
           <StatCard label="Total Completed" value={stats.completed.length} icon={TrendingUp} color="emerald" onClick={() => navigate('/reports')} />
@@ -261,8 +261,8 @@ export default function DispatchDashboard() {
       <DispatchMap />
 
       {/* Ride Panels */}
-      <Tabs defaultValue="schedule" className="space-y-4">
-        <TabsList className="flex-wrap">
+      <Tabs defaultValue="schedule" className="space-y-5">
+        <TabsList className="flex-wrap h-auto bg-transparent border-b border-border rounded-none p-0 gap-4">
           <TabsTrigger value="schedule">Day Schedule ({stats.dateRides.length})</TabsTrigger>
           <TabsTrigger value="pending">Needs Action ({stats.pending.length + stats.approved.length})</TabsTrigger>
           <TabsTrigger value="active">In Progress ({stats.inProgress.length})</TabsTrigger>
