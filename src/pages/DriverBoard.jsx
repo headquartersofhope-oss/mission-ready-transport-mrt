@@ -210,6 +210,19 @@ export default function DriverBoard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transport-requests'] }),
   });
 
+  // Calculate myRides BEFORE it's used in geolocation effect
+  const myRides = useMemo(() => {
+    if (!driverProfile) return { today: [], tomorrow: [] };
+    const name = `${driverProfile.first_name} ${driverProfile.last_name}`;
+    const sort = (a, b) => (a.pickup_time || '99:99').localeCompare(b.pickup_time || '99:99');
+    const match = r => r.assigned_driver_name === name || r.assigned_driver_id === driverProfile.id;
+    const todayRides = allRides.filter(r => r.request_date === today && match(r)).sort(sort);
+    const tomorrowRides = allRides.filter(r => r.request_date === tomorrow && match(r)).sort(sort);
+    // week lookahead for awareness
+    const weekRides = allRides.filter(r => r.request_date > tomorrow && r.request_date <= format(addDays(new Date(), 7), 'yyyy-MM-dd') && match(r)).sort(sort);
+    return { today: todayRides, tomorrow: tomorrowRides, week: weekRides };
+  }, [allRides, driverProfile, today, tomorrow]);
+
   // Geolocation tracking
   useEffect(() => {
     if (!driverProfile || !navigator.geolocation) return;
@@ -244,18 +257,6 @@ export default function DriverBoard() {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [driverProfile, myRides]);
-
-  const myRides = useMemo(() => {
-    if (!driverProfile) return { today: [], tomorrow: [] };
-    const name = `${driverProfile.first_name} ${driverProfile.last_name}`;
-    const sort = (a, b) => (a.pickup_time || '99:99').localeCompare(b.pickup_time || '99:99');
-    const match = r => r.assigned_driver_name === name || r.assigned_driver_id === driverProfile.id;
-    const todayRides = allRides.filter(r => r.request_date === today && match(r)).sort(sort);
-    const tomorrowRides = allRides.filter(r => r.request_date === tomorrow && match(r)).sort(sort);
-    // week lookahead for awareness
-    const weekRides = allRides.filter(r => r.request_date > tomorrow && r.request_date <= format(addDays(new Date(), 7), 'yyyy-MM-dd') && match(r)).sort(sort);
-    return { today: todayRides, tomorrow: tomorrowRides, week: weekRides };
-  }, [allRides, driverProfile, today, tomorrow]);
 
   const handleAction = async (ride, newStatus, notes) => {
     const now = new Date().toISOString();
