@@ -10,10 +10,10 @@ Deno.serve(async (req) => {
 
   try {
     const requests = await base44.entities.TransportRequest.list('-created_date', 2000);
-    const dateRequests = requests.filter(r => r.request_date === request_date);
+    let dateRequests = requests.filter(r => r.request_date === request_date);
 
     if (approved_only) {
-      dateRequests.filter(r => ['approved', 'scheduled', 'driver_assigned'].includes(r.status));
+      dateRequests = dateRequests.filter(r => ['approved', 'scheduled', 'driver_assigned'].includes(r.status));
     }
 
     const groups = [];

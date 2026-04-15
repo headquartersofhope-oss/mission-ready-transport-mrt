@@ -23,6 +23,8 @@ import AiIntelligence from './pages/AiIntelligence';
 import DispatchBoard from './pages/DispatchBoard';
 import DriverBoard from './pages/DriverBoard';
 import OperationsDiagnostic from './pages/OperationsDiagnostic';
+import RiderPortal from './pages/RiderPortal';
+import RiderLayout from './components/RiderLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -66,6 +68,9 @@ const AuthenticatedApp = () => {
         <Route path="/reports" element={<Reports />} />
         <Route path="/audit" element={<AuditCenter />} />
         <Route path="/ai-intelligence" element={<AiIntelligence />} />
+      </Route>
+      <Route element={<RiderLayout />}>
+        <Route path="/my-rides" element={<RiderPortal />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
