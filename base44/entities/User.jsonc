@@ -5,13 +5,38 @@
     "role": {
       "type": "string",
       "enum": [
-        "transport_admin",
-        "dispatcher",
-        "case_manager",
-        "participant_user",
-        "reviewer"
+        "super_admin",
+        "admin",
+        "operations_manager",
+        "dispatch_manager",
+        "transportation_coordinator",
+        "driver",
+        "rider",
+        "read_only_auditor"
       ],
-      "default": "reviewer"
+      "default": "rider",
+      "description": "User role for permission management"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the user account is active"
+    },
+    "department": {
+      "type": "string",
+      "description": "Department or team assignment"
+    },
+    "supervisor_email": {
+      "type": "string",
+      "description": "Email of direct supervisor (for managers/drivers)"
+    },
+    "permissions_override": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional granular permissions (for future fine-grained control)"
     }
-  }
+  },
+  "required": []
 }

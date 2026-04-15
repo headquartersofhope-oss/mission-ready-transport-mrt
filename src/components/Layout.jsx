@@ -2,11 +2,12 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, FileText, Truck, RefreshCw,
   DollarSign, BarChart3, Menu, X, LogOut, ChevronRight,
-  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity
+  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity, Settings
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
+import { canAccessPage } from '@/lib/permissions';
 
 const navSections = [
   {
@@ -42,6 +43,12 @@ const navSections = [
       { path: '/reports', label: 'Reports', icon: BarChart3 },
       { path: '/ai-intelligence', label: 'AI Intelligence', icon: Brain },
       { path: '/audit', label: 'Audit Center', icon: ShieldCheck },
+    ]
+  },
+  {
+    label: 'Administration',
+    items: [
+      { path: '/user-management', label: 'User Management', icon: Settings },
     ]
   },
 ];
@@ -89,33 +96,38 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 p-3 space-y-5 overflow-y-auto custom-scrollbar">
-          {navSections.map(section => (
-            <div key={section.label}>
-              <p className="text-xs font-semibold text-sidebar-foreground/40 uppercase tracking-widest px-3 mb-2">{section.label}</p>
-              <div className="space-y-0.5">
-                {section.items.map(item => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                        ${isActive 
-                          ? 'bg-sidebar-accent text-white shadow-sm' 
-                          : 'text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/40'}
-                      `}
-                    >
-                      <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-sidebar-primary' : ''}`} />
-                      <span className="flex-1">{item.label}</span>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-sidebar-primary shrink-0" />}
-                    </Link>
-                  );
-                })}
+          {navSections.map(section => {
+            const visibleItems = section.items.filter(item => canAccessPage(currentUser?.role, item.path));
+            if (visibleItems.length === 0) return null; // Hide entire section if no items are accessible
+            
+            return (
+              <div key={section.label}>
+                <p className="text-xs font-semibold text-sidebar-foreground/40 uppercase tracking-widest px-3 mb-2">{section.label}</p>
+                <div className="space-y-0.5">
+                  {visibleItems.map(item => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`
+                          flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                          ${isActive 
+                            ? 'bg-sidebar-accent text-white shadow-sm' 
+                            : 'text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/40'}
+                        `}
+                      >
+                        <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-sidebar-primary' : ''}`} />
+                        <span className="flex-1">{item.label}</span>
+                        {isActive && <ChevronRight className="w-3.5 h-3.5 text-sidebar-primary shrink-0" />}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="p-3 border-t border-sidebar-border/60 bg-sidebar-accent/10">
