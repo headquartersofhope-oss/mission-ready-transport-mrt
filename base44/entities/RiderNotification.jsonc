@@ -1,0 +1,111 @@
+{
+  "name": "RiderNotification",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "participant_id": {
+      "type": "string"
+    },
+    "participant_name": {
+      "type": "string"
+    },
+    "participant_phone": {
+      "type": "string"
+    },
+    "participant_email": {
+      "type": "string"
+    },
+    "notification_type": {
+      "type": "string",
+      "enum": [
+        "ride_approved",
+        "driver_assigned",
+        "pickup_confirmed",
+        "en_route",
+        "arriving_soon",
+        "arrived",
+        "delayed",
+        "completed",
+        "no_show",
+        "cancelled",
+        "reminder"
+      ],
+      "description": "Type of notification to send"
+    },
+    "message_body": {
+      "type": "string",
+      "description": "Full notification text"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "driver_phone": {
+      "type": "string"
+    },
+    "vehicle_info": {
+      "type": "string"
+    },
+    "pickup_time": {
+      "type": "string"
+    },
+    "appointment_time": {
+      "type": "string"
+    },
+    "estimated_arrival": {
+      "type": "string"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "sms",
+          "email",
+          "in_app"
+        ]
+      },
+      "description": "Which channels to send via"
+    },
+    "sent_via": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Channels where notification was actually sent"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "failed",
+        "bounced",
+        "read"
+      ],
+      "default": "pending"
+    },
+    "sent_at": {
+      "type": "string"
+    },
+    "delivery_confirmed_at": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "request_id",
+    "participant_id",
+    "notification_type"
+  ]
+}

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Clock, AlertTriangle, Truck, Car, User, RefreshCw, Zap,
   ArrowRight, CheckCircle2, XCircle, Filter, ChevronDown, ChevronUp,
-  Phone, MapPin, RotateCcw, AlertCircle
+  Phone, MapPin, RotateCcw, AlertCircle, Brain, Lightbulb, Package
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -55,11 +55,12 @@ function getHour(timeStr) {
   return h;
 }
 
-function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
+function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict, onAutoAssign }) {
   const [open, setOpen] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(ride.assigned_driver_id || '');
   const [selectedVehicle, setSelectedVehicle] = useState(ride.assigned_vehicle_id || '');
+  const [autoAssigning, setAutoAssigning] = useState(false);
   const navigate = useNavigate();
   const conflictWarning = selectedDriver && selectedDriver !== ride.assigned_driver_id && wouldConflict?.(selectedDriver, ride.id, ride.request_date, ride.pickup_time);
 
@@ -156,7 +157,16 @@ function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
           {/* Assignment controls */}
           {!['completed', 'cancelled', 'no_show', 'denied'].includes(ride.status) && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assign</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assign</p>
+                {!ride.assigned_driver_id && (
+                  <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={() => { setAutoAssigning(true); onAutoAssign?.(ride.id); }}
+                    disabled={autoAssigning}>
+                    <Zap className="w-3 h-3" />
+                    {autoAssigning ? 'AI...' : 'AI Assign'}
+                  </Button>
+                )}
+              </div>
               {conflictWarning && (
                 <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 dark:bg-red-950/30 border border-red-200/60 p-2 rounded">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
@@ -210,7 +220,7 @@ function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
   );
 }
 
-function VehicleLane({ vehicle, rides, drivers, onAssign, wouldConflict }) {
+function VehicleLane({ vehicle, rides, drivers, onAssign, wouldConflict, onAutoAssign }) {
   const activeRides = rides.filter(r => !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status));
   const completed = rides.filter(r => r.status === 'completed');
 
@@ -239,7 +249,7 @@ function VehicleLane({ vehicle, rides, drivers, onAssign, wouldConflict }) {
         ) : (
           <div className="space-y-2">
             {rides.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-              <RideBlock key={ride.id} ride={ride} onAssign={onAssign} drivers={drivers} vehicles={[vehicle]} wouldConflict={wouldConflict} />
+              <RideBlock key={ride.id} ride={ride} onAssign={onAssign} drivers={drivers} vehicles={[vehicle]} wouldConflict={wouldConflict} onAutoAssign={onAutoAssign} />
             ))}
           </div>
         )}
@@ -256,6 +266,9 @@ export default function DispatchBoard() {
   const [driverFilter, setDriverFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [collapsedBlocks, setCollapsedBlocks] = useState({});
+  const [autoAssignLoading, setAutoAssignLoading] = useState(null);
+  const [groupingRecs, setGroupingRecs] = useState(null);
+  const [showGrouping, setShowGrouping] = useState(false);
 
   const { data: allRequests = [] } = useQuery({ queryKey: ['transport-requests'], queryFn: () => base44.entities.TransportRequest.list('-created_date', 1000) });
   const { data: drivers = [] } = useQuery({ queryKey: ['drivers'], queryFn: () => base44.entities.Driver.list('first_name', 200) });
@@ -383,6 +396,35 @@ export default function DispatchBoard() {
     conflicts: driverConflictNames.length,
   }), [dateRides, driverConflictNames]);
 
+  const handleAutoAssign = async (rideId) => {
+    setAutoAssignLoading(rideId);
+    try {
+      const res = await base44.functions.invoke('autoAssignmentEngine', { ride_id: rideId });
+      if (res.data?.recommendation?.auto_assign_eligible) {
+        const rec = res.data.recommendation;
+        const driver = rec.recommended_driver;
+        const vehicle = rec.recommended_vehicle;
+        if (driver?.driver_id && vehicle?.vehicle_id) {
+          await handleAssign(rideId, driver.driver_id, vehicle.vehicle_id);
+        }
+      }
+    } catch (err) {
+      console.error('Auto-assign failed:', err);
+    } finally {
+      setAutoAssignLoading(null);
+    }
+  };
+
+  const loadGroupingRecs = async () => {
+    try {
+      const res = await base44.functions.invoke('pickupGroupingEngine', { request_date: date });
+      setGroupingRecs(res.data?.groups || []);
+      setShowGrouping(true);
+    } catch (err) {
+      console.error('Grouping failed:', err);
+    }
+  };
+
   const toggleBlock = (id) => setCollapsedBlocks(p => ({ ...p, [id]: !p[id] }));
   const uniqueDriverNames = [...new Set(allRequests.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name))];
 
@@ -430,7 +472,7 @@ export default function DispatchBoard() {
         </div>
       )}
 
-      {/* Filters + View Switcher */}
+      {/* Filters + View Switcher + AI Tools */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex rounded-md border border-input overflow-hidden text-sm">
           {[['time', 'Time Blocks'], ['driver', 'By Driver'], ['vehicle', 'By Vehicle']].map(([v, l]) => (
@@ -459,8 +501,35 @@ export default function DispatchBoard() {
             <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
         </Select>
+        <Button size="sm" variant="outline" onClick={loadGroupingRecs} className="gap-1.5 text-xs">
+          <Package className="w-3.5 h-3.5" /> Grouping
+        </Button>
         <span className="ml-auto text-xs text-muted-foreground">{dateRides.length} rides on {date}</span>
       </div>
+
+      {/* Grouping Recommendations Panel */}
+      {showGrouping && groupingRecs && (
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2"><Lightbulb className="w-4 h-4 text-blue-600" />Grouping Opportunities</CardTitle>
+            <button onClick={() => setShowGrouping(false)} className="text-muted-foreground hover:text-foreground">
+              <XCircle className="w-4 h-4" />
+            </button>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {groupingRecs.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No grouping opportunities found for this date.</p>
+            ) : (
+              groupingRecs.slice(0, 3).map((group, idx) => (
+                <div key={idx} className="p-2 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-200 text-xs">
+                  <p className="font-semibold text-blue-700 dark:text-blue-400">{group.reason}</p>
+                  <p className="text-blue-600 dark:text-blue-300 text-xs mt-0.5">Est. savings: {group.estimated_savings}</p>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── TIME VIEW ── */}
       {viewMode === 'time' && (
@@ -502,7 +571,7 @@ export default function DispatchBoard() {
                       if (pDiff !== 0) return pDiff;
                       return (a.pickup_time || '').localeCompare(b.pickup_time || '');
                     }).map(ride => (
-                      <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
+                      <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} onAutoAssign={handleAutoAssign} />
                     ))}
                   </div>
                 )}
@@ -548,7 +617,7 @@ export default function DispatchBoard() {
                 </CardHeader>
                 <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                   {rides.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
+                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} onAutoAssign={handleAutoAssign} />
                   ))}
                 </CardContent>
               </Card>
@@ -562,7 +631,7 @@ export default function DispatchBoard() {
         <div className="space-y-4">
           {Object.entries(ridesByVehicle).map(([id, { vehicle, rides }]) => {
             if (rides.length === 0 && vehicle.service_status !== 'available') return null;
-            return <VehicleLane key={id} vehicle={vehicle} rides={rides} drivers={drivers} onAssign={handleAssign} wouldConflict={wouldConflict} />;
+            return <VehicleLane key={id} vehicle={vehicle} rides={rides} drivers={drivers} onAssign={handleAssign} wouldConflict={wouldConflict} onAutoAssign={handleAutoAssign} />;
           })}
           {/* Unassigned to any vehicle */}
           {(() => {
@@ -578,7 +647,7 @@ export default function DispatchBoard() {
                 </CardHeader>
                 <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                   {noVehicle.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
+                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} onAutoAssign={handleAutoAssign} />
                   ))}
                 </CardContent>
               </Card>

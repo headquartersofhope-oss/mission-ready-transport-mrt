@@ -1,0 +1,146 @@
+{
+  "name": "GroupedRoute",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string",
+      "description": "Assigned driver"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Assigned vehicle"
+    },
+    "request_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the route"
+    },
+    "pickup_order": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stop_sequence": {
+            "type": "number"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "participant_name": {
+            "type": "string"
+          },
+          "pickup_location": {
+            "type": "string"
+          },
+          "scheduled_pickup_time": {
+            "type": "string"
+          },
+          "estimated_arrival_time": {
+            "type": "string"
+          },
+          "actual_pickup_time": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ordered list of pickups"
+    },
+    "dropoff_order": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stop_sequence": {
+            "type": "number"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "participant_name": {
+            "type": "string"
+          },
+          "dropoff_location": {
+            "type": "string"
+          },
+          "appointment_time": {
+            "type": "string"
+          },
+          "scheduled_dropoff_time": {
+            "type": "string"
+          },
+          "estimated_arrival_time": {
+            "type": "string"
+          },
+          "actual_dropoff_time": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ordered list of dropoffs"
+    },
+    "route_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "planned",
+      "description": "Overall route status"
+    },
+    "route_optimized": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this route has been optimized for efficiency"
+    },
+    "total_estimated_duration": {
+      "type": "number",
+      "description": "Estimated total drive time in minutes"
+    },
+    "total_actual_duration": {
+      "type": "number",
+      "description": "Actual total drive time in minutes"
+    },
+    "on_time_risk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low",
+      "description": "Risk of being late for any appointment"
+    },
+    "grouped_ride_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of request IDs grouped on this route"
+    },
+    "grouping_reason": {
+      "type": "string",
+      "description": "Why these rides were grouped together"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "driver_id",
+    "vehicle_id",
+    "request_date",
+    "pickup_order",
+    "dropoff_order"
+  ]
+}

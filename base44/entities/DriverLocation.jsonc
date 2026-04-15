@@ -1,0 +1,74 @@
+{
+  "name": "DriverLocation",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "vehicle_id": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Current latitude (GPS)"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Current longitude (GPS)"
+    },
+    "last_update": {
+      "type": "string",
+      "description": "ISO timestamp of last location update"
+    },
+    "current_status": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "en_route_to_pickup",
+        "at_pickup",
+        "en_route_to_dropoff",
+        "at_dropoff",
+        "offline"
+      ],
+      "description": "Driver's current operational status"
+    },
+    "current_request_id": {
+      "type": "string",
+      "description": "Request ID driver is currently servicing"
+    },
+    "current_pickup_location": {
+      "type": "string"
+    },
+    "current_dropoff_location": {
+      "type": "string"
+    },
+    "distance_to_next_pickup": {
+      "type": "number",
+      "description": "Distance in miles to next pickup"
+    },
+    "eta_next_pickup": {
+      "type": "string",
+      "description": "ISO timestamp of estimated arrival at next pickup"
+    },
+    "speed_mph": {
+      "type": "number",
+      "description": "Current speed in mph"
+    },
+    "accuracy_meters": {
+      "type": "number",
+      "description": "GPS accuracy in meters"
+    },
+    "heading": {
+      "type": "number",
+      "description": "Compass heading 0-360"
+    }
+  },
+  "required": [
+    "driver_id",
+    "driver_name",
+    "vehicle_id"
+  ]
+}
