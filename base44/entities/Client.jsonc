@@ -1,0 +1,102 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string"
+    },
+    "client_type": {
+      "type": "string",
+      "enum": [
+        "nonprofit_hoh",
+        "external_contract",
+        "external_delivery",
+        "external_medical",
+        "internal_operations"
+      ],
+      "description": "Type of client or operation"
+    },
+    "business_entity": {
+      "type": "string",
+      "enum": [
+        "headquarters_of_hope",
+        "mrt_subsidiary",
+        "re_jones_global"
+      ],
+      "default": "mrt_subsidiary",
+      "description": "Billing entity under which this client operates"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "billing_address": {
+      "type": "string"
+    },
+    "contract_reference": {
+      "type": "string",
+      "description": "Contract number or reference"
+    },
+    "contract_start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "contract_end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "billing_email": {
+      "type": "string"
+    },
+    "monthly_volume_estimate": {
+      "type": "number",
+      "description": "Estimated monthly trips/deliveries"
+    },
+    "rate_per_trip": {
+      "type": "number",
+      "description": "Contracted rate per trip"
+    },
+    "rate_per_mile": {
+      "type": "number",
+      "description": "Contracted rate per mile"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "net_30",
+        "net_60",
+        "prepaid",
+        "monthly",
+        "per_trip"
+      ],
+      "description": "Payment terms for this client"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prospect",
+        "active",
+        "paused",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "client_name",
+    "client_type",
+    "business_entity"
+  ]
+}
