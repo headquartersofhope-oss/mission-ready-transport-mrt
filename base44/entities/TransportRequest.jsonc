@@ -133,14 +133,55 @@
     "linked_program": {
       "type": "string"
     },
+    "program_category": {
+      "type": "string",
+      "enum": [
+        "employment_support",
+        "medical_health",
+        "legal_court",
+        "housing",
+        "education_training",
+        "recovery_treatment",
+        "benefits_services",
+        "emergency",
+        "other"
+      ],
+      "description": "Operational program category for cost grouping"
+    },
     "estimated_cost": {
       "type": "number"
     },
     "actual_cost": {
       "type": "number"
     },
+    "fuel_estimate": {
+      "type": "number",
+      "description": "Estimated fuel cost for this trip"
+    },
+    "reimbursement_amount": {
+      "type": "number",
+      "description": "Amount to be reimbursed to driver or vendor"
+    },
     "funding_source": {
       "type": "string"
+    },
+    "funding_source_type": {
+      "type": "string",
+      "enum": [
+        "nonprofit_operating_budget",
+        "grant_funded",
+        "employer_sponsored",
+        "church_donor_sponsored",
+        "client_paid",
+        "emergency_support_fund",
+        "other"
+      ],
+      "description": "Category of funding source"
+    },
+    "is_billable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this ride is billable against a funding source"
     },
     "participant_contribution": {
       "type": "number",

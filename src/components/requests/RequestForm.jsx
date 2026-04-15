@@ -37,9 +37,10 @@ const defaultState = {
   trip_type: 'one_way', is_recurring: false, recurring_plan_id: '',
   purpose: '', priority: 'standard', status: 'requested',
   special_instructions: '', linked_program: '',
-  estimated_cost: '', funding_source: '',
-  participant_contribution: 0, driver_notes: '',
-  submitted_by: '', service_zone: '',
+  estimated_cost: '', actual_cost: '', fuel_estimate: '', reimbursement_amount: '',
+  funding_source: '', funding_source_type: '', program_category: '',
+  is_billable: true, participant_contribution: 0,
+  driver_notes: '', submitted_by: '', service_zone: '',
   assigned_driver_name: '', assigned_vehicle_name: '', assigned_provider_name: '',
 };
 
@@ -79,7 +80,10 @@ export default function RequestForm({ existingRequest, onSave, onCancel }) {
     e.preventDefault();
     setSaving(true);
     const submitData = { ...form };
-    if (submitData.estimated_cost === '') delete submitData.estimated_cost;
+    ['estimated_cost', 'actual_cost', 'fuel_estimate', 'reimbursement_amount'].forEach(f => {
+      if (submitData[f] === '' || submitData[f] === null) delete submitData[f];
+      else if (submitData[f] !== undefined) submitData[f] = parseFloat(submitData[f]) || 0;
+    });
     await onSave(submitData);
     setSaving(false);
   };
@@ -234,18 +238,66 @@ export default function RequestForm({ existingRequest, onSave, onCancel }) {
 
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm">Funding & Cost</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Funding Source</Label>
-              <Input value={form.funding_source || ''} onChange={e => set('funding_source', e.target.value)} placeholder="e.g. Employment Support Grant" />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Funding Source Name</Label>
+                <Input value={form.funding_source || ''} onChange={e => set('funding_source', e.target.value)} placeholder="e.g. Employment Support Grant" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Funding Source Type</Label>
+                <Select value={form.funding_source_type || ''} onValueChange={v => set('funding_source_type', v)}>
+                  <SelectTrigger><SelectValue placeholder="Select type…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nonprofit_operating_budget">Nonprofit Operating Budget</SelectItem>
+                    <SelectItem value="grant_funded">Grant-Funded Transportation</SelectItem>
+                    <SelectItem value="employer_sponsored">Employer-Sponsored Ride</SelectItem>
+                    <SelectItem value="church_donor_sponsored">Church / Donor-Sponsored</SelectItem>
+                    <SelectItem value="client_paid">Client-Paid Ride</SelectItem>
+                    <SelectItem value="emergency_support_fund">Emergency Support Fund</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Program Category</Label>
+                <Select value={form.program_category || ''} onValueChange={v => set('program_category', v)}>
+                  <SelectTrigger><SelectValue placeholder="Select category…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employment_support">Employment Support</SelectItem>
+                    <SelectItem value="medical_health">Medical / Health</SelectItem>
+                    <SelectItem value="legal_court">Legal / Court</SelectItem>
+                    <SelectItem value="housing">Housing</SelectItem>
+                    <SelectItem value="education_training">Education / Training</SelectItem>
+                    <SelectItem value="recovery_treatment">Recovery / Treatment</SelectItem>
+                    <SelectItem value="benefits_services">Benefits / Services</SelectItem>
+                    <SelectItem value="emergency">Emergency</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Estimated Cost ($)</Label>
-              <Input type="number" step="0.01" value={form.estimated_cost || ''} onChange={e => set('estimated_cost', e.target.value)} placeholder="0.00" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Estimated Cost ($)</Label>
+                <Input type="number" step="0.01" value={form.estimated_cost || ''} onChange={e => set('estimated_cost', e.target.value)} placeholder="0.00" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Fuel Estimate ($)</Label>
+                <Input type="number" step="0.01" value={form.fuel_estimate || ''} onChange={e => set('fuel_estimate', e.target.value)} placeholder="0.00" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Reimbursement Amount ($)</Label>
+                <Input type="number" step="0.01" value={form.reimbursement_amount || ''} onChange={e => set('reimbursement_amount', e.target.value)} placeholder="0.00" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Participant Contribution ($)</Label>
+                <Input type="number" step="0.01" value={form.participant_contribution || 0} onChange={e => set('participant_contribution', parseFloat(e.target.value) || 0)} />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Participant Contribution ($)</Label>
-              <Input type="number" step="0.01" value={form.participant_contribution || 0} onChange={e => set('participant_contribution', parseFloat(e.target.value) || 0)} />
+            <div className="flex items-center gap-3 pt-1">
+              <Switch checked={form.is_billable !== false} onCheckedChange={v => set('is_billable', v)} />
+              <Label className="text-xs">Billable ride (charge against funding source)</Label>
             </div>
           </CardContent>
         </Card>

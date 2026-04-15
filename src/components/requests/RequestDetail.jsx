@@ -37,6 +37,8 @@ export default function RequestDetail({ request, onBack }) {
   const [postNotes, setPostNotes] = useState(request.post_ride_notes || '');
   const [driverNotes, setDriverNotes] = useState(request.driver_notes || '');
   const [actualCost, setActualCost] = useState(request.actual_cost || '');
+  const [fuelCost, setFuelCost] = useState(request.fuel_estimate || '');
+  const [reimbursement, setReimbursement] = useState(request.reimbursement_amount || '');
   const [selectedDriver, setSelectedDriver] = useState(request.assigned_driver_name || '');
   const [selectedVehicle, setSelectedVehicle] = useState(request.assigned_vehicle_name || '');
 
@@ -77,11 +79,11 @@ export default function RequestDetail({ request, onBack }) {
   };
 
   const handleSaveNotes = async () => {
-    await updateMutation.mutateAsync({
-      driver_notes: driverNotes,
-      post_ride_notes: postNotes,
-      actual_cost: actualCost ? parseFloat(actualCost) : undefined,
-    });
+    const update = { driver_notes: driverNotes, post_ride_notes: postNotes };
+    if (actualCost !== '') update.actual_cost = parseFloat(actualCost) || 0;
+    if (fuelCost !== '') update.fuel_estimate = parseFloat(fuelCost) || 0;
+    if (reimbursement !== '') update.reimbursement_amount = parseFloat(reimbursement) || 0;
+    await updateMutation.mutateAsync(update);
     queryClient.invalidateQueries({ queryKey: ['transport-requests'] });
   };
 
@@ -219,13 +221,21 @@ export default function RequestDetail({ request, onBack }) {
                 <Label className="text-xs">Post-Ride Notes</Label>
                 <Textarea rows={2} value={postNotes} onChange={e => setPostNotes(e.target.value)} placeholder="Notes after ride completion..." />
               </div>
-              <div className="flex items-center gap-3">
-                <div className="space-y-1.5 flex-1">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
                   <Label className="text-xs">Actual Cost ($)</Label>
                   <Input type="number" step="0.01" value={actualCost} onChange={e => setActualCost(e.target.value)} placeholder={request.estimated_cost ? `Est: $${request.estimated_cost}` : '0.00'} />
                 </div>
-                <Button size="sm" variant="outline" className="mt-5" onClick={handleSaveNotes}>Save</Button>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Fuel Cost ($)</Label>
+                  <Input type="number" step="0.01" value={fuelCost} onChange={e => setFuelCost(e.target.value)} placeholder="0.00" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Reimbursement ($)</Label>
+                  <Input type="number" step="0.01" value={reimbursement} onChange={e => setReimbursement(e.target.value)} placeholder="0.00" />
+                </div>
               </div>
+              <Button size="sm" variant="outline" onClick={handleSaveNotes}>Save Notes & Costs</Button>
             </CardContent>
           </Card>
         </div>
@@ -251,9 +261,18 @@ export default function RequestDetail({ request, onBack }) {
                 <span className="text-muted-foreground text-xs">Est. Cost:</span>
                 <span className="font-medium text-xs">{request.estimated_cost ? `$${request.estimated_cost}` : '—'}</span>
               </div>
+              {request.actual_cost ? (
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                  <span className="text-muted-foreground text-xs">Actual:</span>
+                  <span className="font-medium text-xs text-emerald-600">${request.actual_cost}</span>
+                </div>
+              ) : null}
               {request.funding_source && (
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground">Funding: {request.funding_source}</p>
+                <div className="pt-2 border-t border-border/50 space-y-1">
+                  <p className="text-xs text-muted-foreground">Funding: <span className="font-medium text-foreground">{request.funding_source}</span></p>
+                  {request.funding_source_type && <p className="text-xs text-muted-foreground capitalize">{request.funding_source_type.replace(/_/g, ' ')}</p>}
+                  {request.is_billable === false && <p className="text-xs text-amber-600 font-medium">Non-billable</p>}
                 </div>
               )}
               {request.submitted_by && (
