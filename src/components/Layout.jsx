@@ -10,17 +10,17 @@ import { Badge } from '@/components/ui/badge';
 
 const navSections = [
   {
-    label: 'Dispatch',
+    label: 'Operations',
     items: [
-      { path: '/', label: 'Overview', icon: LayoutDashboard },
+      { path: '/', label: 'Dispatch Overview', icon: LayoutDashboard },
       { path: '/dispatch-board', label: 'Dispatch Board', icon: Truck },
       { path: '/requests', label: 'Ride Requests', icon: FileText },
+      { path: '/driver-board', label: 'Driver Board', icon: Navigation },
     ]
   },
   {
-    label: 'Drivers & Fleet',
+    label: 'Fleet & Team',
     items: [
-      { path: '/driver-board', label: 'Driver Portal', icon: Navigation },
       { path: '/drivers', label: 'Driver Management', icon: UserCheck },
       { path: '/vehicles', label: 'Vehicle Fleet', icon: Car },
     ]
@@ -34,14 +34,14 @@ const navSections = [
     ]
   },
   {
-    label: 'Analytics & Quality',
+    label: 'Analytics & Operations',
     items: [
       { path: '/costs', label: 'Cost & Funding', icon: DollarSign },
       { path: '/incidents', label: 'Incidents', icon: AlertTriangle },
       { path: '/diagnostics', label: 'System Health', icon: Activity },
       { path: '/reports', label: 'Reports', icon: BarChart3 },
-      { path: '/audit', label: 'Audit & Diagnostics', icon: ShieldCheck },
       { path: '/ai-intelligence', label: 'AI Intelligence', icon: Brain },
+      { path: '/audit', label: 'Audit Center', icon: ShieldCheck },
     ]
   },
 ];
@@ -66,29 +66,32 @@ export default function Layout() {
         bg-sidebar text-sidebar-foreground
         flex flex-col border-r border-sidebar-border
         transition-transform duration-300 ease-in-out
+        overflow-hidden
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-4 border-b border-sidebar-border">
+        <div className="p-4 border-b border-sidebar-border/60 bg-gradient-to-r from-sidebar-accent/20 to-transparent">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-sidebar-primary rounded-md flex items-center justify-center">
                   <Truck className="w-4 h-4 text-sidebar-primary-foreground" />
                 </div>
-                <h1 className="text-base font-bold tracking-tight text-white">MRT</h1>
+                <div>
+                  <h1 className="text-base font-bold tracking-tight text-white">MRT</h1>
+                  <p className="text-xs text-sidebar-foreground/50">Mission Ready Transport</p>
+                </div>
               </div>
-              <p className="text-xs text-sidebar-foreground/50 mt-0.5 ml-9">Mission Ready Transport</p>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-white">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-white shrink-0">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-5 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-5 overflow-y-auto custom-scrollbar">
           {navSections.map(section => (
             <div key={section.label}>
-              <p className="text-xs font-semibold text-sidebar-foreground/40 uppercase tracking-widest px-3 mb-1.5">{section.label}</p>
+              <p className="text-xs font-semibold text-sidebar-foreground/40 uppercase tracking-widest px-3 mb-2">{section.label}</p>
               <div className="space-y-0.5">
                 {section.items.map(item => {
                   const isActive = location.pathname === item.path;
@@ -98,15 +101,15 @@ export default function Layout() {
                       to={item.path}
                       onClick={() => setSidebarOpen(false)}
                       className={`
-                        flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                         ${isActive 
-                          ? 'bg-sidebar-accent text-white' 
-                          : 'text-sidebar-foreground/65 hover:text-white hover:bg-sidebar-accent/50'}
+                          ? 'bg-sidebar-accent text-white shadow-sm' 
+                          : 'text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/40'}
                       `}
                     >
-                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-sidebar-primary' : ''}`} />
-                      <span>{item.label}</span>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5 ml-auto text-sidebar-primary" />}
+                      <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-sidebar-primary' : ''}`} />
+                      <span className="flex-1">{item.label}</span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-sidebar-primary shrink-0" />}
                     </Link>
                   );
                 })}
@@ -115,13 +118,13 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border/60 bg-sidebar-accent/10">
           {currentUser && (
-            <div className="px-3 py-2 mb-1">
-              <p className="text-xs font-medium text-white truncate">{currentUser.full_name}</p>
-              <p className="text-xs text-sidebar-foreground/50 truncate">{currentUser.email}</p>
+            <div className="px-3 py-2 mb-2 rounded-lg bg-sidebar-accent/20">
+              <p className="text-xs font-semibold text-white truncate">{currentUser.full_name}</p>
+              <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5">{currentUser.email}</p>
               {currentUser.role && (
-                <Badge variant="outline" className="mt-1 text-xs border-sidebar-border text-sidebar-foreground/60 capitalize">
+                <Badge variant="outline" className="mt-2 text-xs border-sidebar-primary bg-sidebar-primary/10 text-sidebar-primary capitalize font-medium">
                   {currentUser.role?.replace(/_/g, ' ')}
                 </Badge>
               )}
@@ -138,13 +141,13 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border px-4 lg:px-6 h-14 flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-4 lg:px-6 h-14 flex items-center justify-between gap-4 shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground/60 hover:text-foreground">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
-          <div className="text-xs text-muted-foreground font-medium hidden sm:block">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          <div className="text-xs text-muted-foreground font-medium">
+            {new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-6">
