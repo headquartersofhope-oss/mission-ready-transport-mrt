@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import RideTable from '../components/dispatch/RideTable';
 import UnassignedQueue from '../components/dispatch/UnassignedQueue';
+import DispatchMap from '../components/dispatch/DispatchMap';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -255,6 +256,9 @@ export default function DispatchDashboard() {
           <StatCard label="Total Program Cost" value={`$${stats.totalCost.toLocaleString()}`} icon={DollarSign} color="emerald" subtext="completed rides" onClick={() => navigate('/costs')} />
         </div>
       </div>
+
+      {/* Live Driver Tracking Map */}
+      <DispatchMap />
 
       {/* Ride Panels */}
       <Tabs defaultValue="schedule" className="space-y-4">

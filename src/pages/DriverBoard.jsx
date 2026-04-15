@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import {
   ArrowRight, RotateCcw, Navigation, Zap, Car, Info
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
+import LocationPermissionPrompt from '../components/geolocation/LocationPermissionPrompt';
 
 const STATUS_ACTIONS = {
   driver_assigned: [{ label: 'Mark En Route →', status: 'en_route', variant: 'default' }],
@@ -208,6 +210,41 @@ export default function DriverBoard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transport-requests'] }),
   });
 
+  // Geolocation tracking
+  useEffect(() => {
+    if (!driverProfile || !navigator.geolocation) return;
+    
+    const sendLocation = (position) => {
+      const { latitude, longitude, accuracy, heading } = position.coords;
+      const speed = position.coords.speed || null;
+      
+      // Find current ride status for ETA
+      const currentRide = myRides.today?.find(r => 
+        ['driver_assigned', 'scheduled', 'en_route', 'rider_picked_up'].includes(r.status)
+      );
+      
+      base44.functions.invoke('captureDriverLocation', {
+        driver_id: driverProfile.id,
+        driver_name: `${driverProfile.first_name} ${driverProfile.last_name}`,
+        vehicle_id: driverProfile.assigned_vehicle_id,
+        latitude,
+        longitude,
+        accuracy,
+        speed,
+        heading,
+        current_status: currentRide?.status || 'idle',
+        current_request_id: currentRide?.id
+      }).catch(err => console.error('Location update failed:', err));
+    };
+
+    const watchId = navigator.geolocation.watchPosition(sendLocation, 
+      err => console.warn('Geolocation error:', err),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [driverProfile, myRides]);
+
   const myRides = useMemo(() => {
     if (!driverProfile) return { today: [], tomorrow: [] };
     const name = `${driverProfile.first_name} ${driverProfile.last_name}`;
@@ -275,6 +312,9 @@ export default function DriverBoard() {
           </div>
         )}
       </div>
+
+      {/* Location Tracking Prompt */}
+      <LocationPermissionPrompt />
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2">

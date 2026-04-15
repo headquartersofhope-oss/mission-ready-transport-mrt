@@ -1,0 +1,148 @@
+import { useEffect, useState, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
+import { base44 } from '@/api/base44Client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Loader2, MapPin } from 'lucide-react';
+
+// Custom marker icons
+const driverIcon = new L.Icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+export default function DispatchMap() {
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState([41.8781, -87.6298]); // Chicago
+  const mapRef = useRef(null);
+
+  const loadDriverLocations = async () => {
+    setLoading(true);
+    try {
+      const locations = await base44.entities.DriverLocation.list('-last_update', 100);
+      setDrivers(locations);
+      
+      // Center map on first driver if available
+      if (locations.length > 0 && locations[0].latitude && locations[0].longitude) {
+        setMapCenter([locations[0].latitude, locations[0].longitude]);
+      }
+    } catch (err) {
+      console.error('Failed to load driver locations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDriverLocations();
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(loadDriverLocations, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            Live Driver Tracking
+          </CardTitle>
+        </div>
+        <Button 
+          onClick={loadDriverLocations} 
+          disabled={loading} 
+          size="sm" 
+          variant="outline"
+          className="gap-1"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCw className="w-4 h-4" />
+          )}
+          Refresh
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {drivers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No active driver locations yet.</p>
+            <p className="text-xs mt-1">Drivers must share location from their device.</p>
+          </div>
+        ) : (
+          <>
+            <MapContainer 
+              center={mapCenter} 
+              zoom={13} 
+              className="h-96 rounded-lg border border-input"
+              ref={mapRef}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; OpenStreetMap contributors'
+              />
+              {drivers.map((driver) => {
+                if (!driver.latitude || !driver.longitude) return null;
+                const lastUpdateTime = new Date(driver.last_update);
+                const minutesAgo = Math.floor((Date.now() - lastUpdateTime) / 60000);
+                
+                return (
+                  <Marker
+                    key={driver.id}
+                    position={[driver.latitude, driver.longitude]}
+                    icon={driverIcon}
+                  >
+                    <Popup>
+                      <div className="text-xs space-y-1">
+                        <p className="font-semibold">{driver.driver_name || 'Driver'}</p>
+                        <p>Status: <span className="capitalize font-semibold">{driver.current_status}</span></p>
+                        {driver.speed_mph && <p>Speed: {driver.speed_mph.toFixed(1)} mph</p>}
+                        <p className="text-muted-foreground">
+                          {minutesAgo < 1 ? 'Just now' : `${minutesAgo}m ago`}
+                        </p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MapContainer>
+            
+            <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
+              <p className="text-xs font-semibold text-muted-foreground">Active Drivers ({drivers.length})</p>
+              {drivers.map((driver) => {
+                const lastUpdateTime = new Date(driver.last_update);
+                const minutesAgo = Math.floor((Date.now() - lastUpdateTime) / 60000);
+                return (
+                  <div key={driver.id} className="flex items-center justify-between text-xs p-2 bg-muted rounded">
+                    <div>
+                      <p className="font-semibold">{driver.driver_name || 'Driver'}</p>
+                      <p className="text-muted-foreground">
+                        {driver.latitude?.toFixed(4)}, {driver.longitude?.toFixed(4)}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      driver.current_status === 'en_route_to_pickup' ? 'bg-blue-100 text-blue-700' :
+                      driver.current_status === 'at_pickup' ? 'bg-amber-100 text-amber-700' :
+                      driver.current_status === 'en_route_to_dropoff' ? 'bg-purple-100 text-purple-700' :
+                      driver.current_status === 'at_dropoff' ? 'bg-green-100 text-green-700' :
+                      'bg-slate-100 text-slate-700'
+                    }`}>
+                      {minutesAgo < 1 ? 'Now' : `${minutesAgo}m`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
