@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Brain, Truck, BarChart3, UserX, UserCheck,
   Calendar, FileText, Database, MessageSquare,
-  Loader2, Send, CheckCircle2, AlertTriangle, Zap
+  Loader2, Send, CheckCircle2, AlertTriangle, Zap,
+  TrendingUp, Users, Car, GitFork, ShieldAlert
 } from 'lucide-react';
 import AiModuleShell from '@/components/ai/AiModuleShell';
 import { ResultSection, BulletList, SeverityBadge, SummaryBox, ScoreBadge } from '@/components/ai/AiResultPanel';
@@ -429,6 +430,213 @@ function DataCleanupResult({ r }) {
   );
 }
 
+// ─── STATUS HELPERS ────────────────────────────────────────────────────────
+
+const STATUS_COLORS = {
+  green:       { bar: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50' },
+  yellow:      { bar: 'bg-amber-400',   text: 'text-amber-600',   bg: 'bg-amber-50'   },
+  red:         { bar: 'bg-red-500',     text: 'text-red-600',     bg: 'bg-red-50'     },
+};
+const READINESS_COLORS = {
+  operational: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  stressed:    'bg-amber-100  text-amber-700  border-amber-300',
+  at_risk:     'bg-orange-100 text-orange-700 border-orange-300',
+  overwhelmed: 'bg-red-100   text-red-700   border-red-300',
+};
+const SEVERITY_COLORS = {
+  none:     'text-emerald-600',
+  minor:    'text-amber-600',
+  moderate: 'text-orange-600',
+  severe:   'text-red-600',
+};
+
+function MiniBar({ pct, status }) {
+  const c = STATUS_COLORS[status] || STATUS_COLORS.green;
+  return (
+    <div className="w-full h-1.5 rounded-full bg-border mt-1 overflow-hidden">
+      <div className={`h-full rounded-full transition-all ${c.bar}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+    </div>
+  );
+}
+
+function DemandScalingResult({ r }) {
+  const [selected, setSelected] = useState(null);
+  const steps = r.simulation_steps || [];
+  const rec = r.recommendations || {};
+  const bp = r.breaking_point || {};
+
+  return (
+    <div className="space-y-6">
+      <SummaryBox text={r.summary} />
+
+      {/* Scaling chart — step cards */}
+      <div>
+        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" /> Demand Scaling Simulation (10 → 80 rides/day)
+        </h3>
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+          {steps.map((step, i) => {
+            const rc = READINESS_COLORS[step.overall_readiness] || READINESS_COLORS.operational;
+            const isActive = selected === i;
+            return (
+              <button key={i} onClick={() => setSelected(isActive ? null : i)}
+                className={`rounded-xl border p-2.5 text-center cursor-pointer transition-all hover:shadow-md ${rc} ${isActive ? 'ring-2 ring-primary shadow-md' : ''}`}>
+                <p className="text-lg font-bold">{step.rides_per_day}</p>
+                <p className="text-[10px] font-medium leading-tight capitalize mt-0.5">{step.overall_readiness?.replace('_', ' ')}</p>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Click a tile to inspect that demand level.</p>
+      </div>
+
+      {/* Step detail panel */}
+      {selected !== null && steps[selected] && (() => {
+        const s = steps[selected];
+        return (
+          <Card className="border-2 border-primary/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded-full border text-xs font-semibold ${READINESS_COLORS[s.overall_readiness]}`}>
+                  {s.overall_readiness?.replace('_', ' ').toUpperCase()}
+                </span>
+                <span className="font-bold">{s.rides_per_day} rides/day — Detail</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              {/* Driver load */}
+              <div className="space-y-1 p-3 rounded-lg bg-muted/40">
+                <div className="flex items-center gap-1.5 font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+                  <Users className="w-3.5 h-3.5" /> Driver Load
+                </div>
+                <p className="font-bold text-base">{s.driver_load?.rides_per_driver?.toFixed(1)} rides/driver</p>
+                <MiniBar pct={s.driver_load?.utilization_pct} status={s.driver_load?.status} />
+                <p className={`text-xs font-medium ${STATUS_COLORS[s.driver_load?.status]?.text}`}>{s.driver_load?.utilization_pct}% utilization</p>
+                <p className="text-xs text-muted-foreground">{s.driver_load?.notes}</p>
+              </div>
+              {/* Vehicle utilization */}
+              <div className="space-y-1 p-3 rounded-lg bg-muted/40">
+                <div className="flex items-center gap-1.5 font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+                  <Car className="w-3.5 h-3.5" /> Vehicle Utilization
+                </div>
+                <p className="font-bold text-base">{s.vehicle_utilization?.vehicles_needed} needed / {s.vehicle_utilization?.vehicles_available} available</p>
+                <MiniBar pct={s.vehicle_utilization?.utilization_pct} status={s.vehicle_utilization?.status} />
+                <p className={`text-xs font-medium ${STATUS_COLORS[s.vehicle_utilization?.status]?.text}`}>{s.vehicle_utilization?.utilization_pct}% utilization</p>
+                <p className="text-xs text-muted-foreground">{s.vehicle_utilization?.notes}</p>
+              </div>
+              {/* Conflicts */}
+              <div className="space-y-1 p-3 rounded-lg bg-muted/40">
+                <div className="flex items-center gap-1.5 font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+                  <GitFork className="w-3.5 h-3.5" /> Scheduling Conflicts
+                </div>
+                <p className="font-bold text-base">{s.scheduling_conflicts?.conflict_count} conflicts</p>
+                <p className="text-xs text-amber-600 font-medium">{s.scheduling_conflicts?.conflict_type}</p>
+                <p className="text-xs text-muted-foreground">{s.scheduling_conflicts?.notes}</p>
+              </div>
+              {/* Bottleneck */}
+              <div className="space-y-1 p-3 rounded-lg bg-muted/40">
+                <div className="flex items-center gap-1.5 font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+                  <ShieldAlert className="w-3.5 h-3.5" /> Assignment Bottleneck
+                </div>
+                <p className={`font-bold text-base ${SEVERITY_COLORS[s.assignment_bottleneck?.severity]}`}>
+                  {s.assignment_bottleneck?.severity?.toUpperCase()} severity
+                </p>
+                <p className="text-xs font-medium">{s.assignment_bottleneck?.bottleneck}</p>
+                <p className="text-xs text-muted-foreground">{s.assignment_bottleneck?.notes}</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {/* Breaking point */}
+      {bp.rides_per_day && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 rounded-xl">
+          <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-red-700">System Breaking Point: {bp.rides_per_day} rides/day</p>
+            <p className="text-xs text-red-600 mt-0.5">{bp.reason}</p>
+            <p className="text-xs text-muted-foreground mt-1">First failure mode: {bp.first_failure_mode}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><Users className="w-4 h-4 text-blue-600" />Staffing Recommendations</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Ideal driver count</span>
+              <span className="font-bold text-2xl text-blue-600">{rec.ideal_driver_count}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">{rec.driver_reasoning}</p>
+            <p className="text-xs font-medium text-blue-700 border-t pt-2">{rec.backup_driver_recommendation}</p>
+            <p className="text-xs text-muted-foreground">{rec.peak_time_staffing}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><Car className="w-4 h-4 text-emerald-600" />Fleet Recommendations</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Ideal vehicle count</span>
+              <span className="font-bold text-2xl text-emerald-600">{rec.ideal_vehicle_count}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">{rec.vehicle_reasoning}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><GitFork className="w-4 h-4 text-purple-600" />Optimal Distribution Strategy</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p className="text-muted-foreground">{rec.optimal_distribution_strategy}</p>
+            {rec.trip_batching_potential && (
+              <p className="text-xs px-3 py-1.5 bg-purple-50 dark:bg-purple-950/20 rounded-lg text-purple-700 border border-purple-200/50">
+                <strong>Trip batching:</strong> {rec.trip_batching_potential}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cost efficiency */}
+      {r.cost_efficiency && (
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-600">Cost Efficiency at Scale</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-3 gap-4 text-sm">
+            <div className="text-center p-2 bg-muted/40 rounded-lg">
+              <p className="text-xs text-muted-foreground">Cost/ride @ 10</p>
+              <p className="font-bold text-lg">{r.cost_efficiency.cost_per_ride_at_10}</p>
+            </div>
+            <div className="text-center p-2 bg-muted/40 rounded-lg">
+              <p className="text-xs text-muted-foreground">Cost/ride @ 80</p>
+              <p className="font-bold text-lg text-emerald-600">{r.cost_efficiency.cost_per_ride_at_80}</p>
+            </div>
+            <div className="text-center p-2 bg-muted/40 rounded-lg col-span-1 md:col-span-1 flex items-center">
+              <p className="text-xs text-muted-foreground">{r.cost_efficiency.economies_of_scale_notes}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Risk summary */}
+      {r.risk_summary?.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-red-600">Key Risks at Scale</CardTitle></CardHeader>
+          <CardContent><BulletList items={r.risk_summary} color="bg-red-400" /></CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 function QueryPanel({ requests, drivers, vehicles, participants, incidents, recurringPlans }) {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState(null);
@@ -607,6 +815,7 @@ export default function AiIntelligence() {
           <TabsTrigger value="schedule" className="gap-1.5 text-xs"><Calendar className="w-3.5 h-3.5" />Schedule Quality</TabsTrigger>
           <TabsTrigger value="summary" className="gap-1.5 text-xs"><FileText className="w-3.5 h-3.5" />Ops Summary</TabsTrigger>
           <TabsTrigger value="cleanup" className="gap-1.5 text-xs"><Database className="w-3.5 h-3.5" />Data Cleanup</TabsTrigger>
+          <TabsTrigger value="scaling" className="gap-1.5 text-xs"><TrendingUp className="w-3.5 h-3.5" />Demand Scaling</TabsTrigger>
           <TabsTrigger value="query" className="gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" />AI Query</TabsTrigger>
         </TabsList>
 
@@ -740,7 +949,35 @@ export default function AiIntelligence() {
           </AiModuleShell>
         </TabsContent>
 
-        {/* 8. AI Query */}
+        {/* 8. Demand Scaling Simulator */}
+        <TabsContent value="scaling">
+          <AiModuleShell title="Demand Scaling Simulator" icon={TrendingUp} runLabel="Run Scaling Simulation (10→80 rides)"
+            description="Simulates transportation demand from 10 to 80 rides/day in steps, analyzing driver load, vehicle utilization, scheduling conflicts, and bottlenecks — then recommends ideal staffing and fleet size."
+            onRun={() => run('demand_scaling', {
+              currentState: {
+                active_drivers: activeDrivers.length,
+                driver_names: activeDrivers.map(d => `${d.first_name} ${d.last_name}`),
+                driver_shift_schedules: activeDrivers.map(d => ({ name: `${d.first_name} ${d.last_name}`, shift: d.shift_schedule, availability: d.availability })),
+                active_vehicles: vehicles.filter(v => v.service_status === 'available' && v.status === 'active').length,
+                vehicle_details: vehicles.filter(v => v.status === 'active').map(v => ({ name: v.nickname || `${v.make} ${v.model}`, capacity: v.seat_capacity, status: v.service_status, wheelchair: v.wheelchair_accessible })),
+                current_open_rides: openRides.length,
+                avg_on_time_rate: activeDrivers.length ? Math.round(activeDrivers.reduce((s, d) => s + (d.on_time_rate || 100), 0) / activeDrivers.length) : 100,
+              },
+              patterns: {
+                time_block_distribution: timeBlocks,
+                purpose_breakdown: (() => { const pb = {}; requests.forEach(r => { if (r.purpose) pb[r.purpose] = (pb[r.purpose] || 0) + 1; }); return pb; })(),
+                return_trip_rate: requests.length ? Math.round(requests.filter(r => r.return_trip).length / requests.length * 100) : 0,
+                urgent_rate: requests.length ? Math.round(requests.filter(r => r.priority === 'urgent').length / requests.length * 100) : 0,
+                recurring_rate: requests.length ? Math.round(requests.filter(r => r.is_recurring).length / requests.length * 100) : 0,
+                avg_rides_per_driver: driverWorkloads.length ? Math.round(driverWorkloads.reduce((s, d) => s + d.ride_count, 0) / driverWorkloads.length * 10) / 10 : 0,
+              }
+            })}
+            loading={loading.demand_scaling} hasResult={!!results.demand_scaling}>
+            {results.demand_scaling && <DemandScalingResult r={results.demand_scaling} />}
+          </AiModuleShell>
+        </TabsContent>
+
+        {/* 9. AI Query */}
         <TabsContent value="query">
           <QueryPanel requests={requests} drivers={drivers} vehicles={vehicles} participants={participants} incidents={incidents} recurringPlans={recurringPlans} />
         </TabsContent>

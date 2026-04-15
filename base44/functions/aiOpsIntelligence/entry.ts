@@ -142,6 +142,75 @@ Analyze data quality and return JSON:
   "summary": string
 }`,
 
+    demand_scaling: `You are a transportation operations capacity planner for a nonprofit organization.
+
+Current fleet and staffing snapshot:
+${JSON.stringify(data.currentState, null, 2)}
+
+Historical ride distribution patterns:
+${JSON.stringify(data.patterns, null, 2)}
+
+Simulate scaling demand from 10 rides/day to 80 rides/day in steps (10, 20, 30, 40, 50, 60, 70, 80).
+At each step analyze: driver load, vehicle utilization, scheduling conflicts, and assignment bottlenecks.
+Then provide staffing and fleet recommendations.
+
+Return JSON exactly matching this schema:
+{
+  "simulation_steps": [
+    {
+      "rides_per_day": number,
+      "driver_load": {
+        "rides_per_driver": number,
+        "utilization_pct": number,
+        "overloaded": boolean,
+        "status": "green"|"yellow"|"red",
+        "notes": string
+      },
+      "vehicle_utilization": {
+        "vehicles_needed": number,
+        "vehicles_available": number,
+        "utilization_pct": number,
+        "status": "green"|"yellow"|"red",
+        "notes": string
+      },
+      "scheduling_conflicts": {
+        "conflict_count": number,
+        "conflict_type": string,
+        "risk_level": "low"|"medium"|"high"|"critical",
+        "notes": string
+      },
+      "assignment_bottleneck": {
+        "bottleneck": string,
+        "severity": "none"|"minor"|"moderate"|"severe",
+        "notes": string
+      },
+      "overall_readiness": "operational"|"stressed"|"at_risk"|"overwhelmed"
+    }
+  ],
+  "breaking_point": {
+    "rides_per_day": number,
+    "reason": string,
+    "first_failure_mode": string
+  },
+  "recommendations": {
+    "ideal_driver_count": number,
+    "ideal_vehicle_count": number,
+    "driver_reasoning": string,
+    "vehicle_reasoning": string,
+    "optimal_distribution_strategy": string,
+    "peak_time_staffing": string,
+    "trip_batching_potential": string,
+    "backup_driver_recommendation": string
+  },
+  "cost_efficiency": {
+    "cost_per_ride_at_10": string,
+    "cost_per_ride_at_80": string,
+    "economies_of_scale_notes": string
+  },
+  "risk_summary": [string],
+  "summary": string
+}`,
+
     ops_query: `You are an operational intelligence assistant for a nonprofit transportation platform with live data access.
 
 Current system data:
