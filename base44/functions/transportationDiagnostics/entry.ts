@@ -214,14 +214,20 @@ Deno.serve(async (req) => {
 
     return Response.json({
       overall_status: overallStatus,
-      diagnostics,
+      data_coverage: diagnostics.data_coverage,
+      dispatch_health: diagnostics.dispatch_health,
+      assignment_quality: diagnostics.assignment_quality,
+      route_health: diagnostics.route_health,
+      notification_readiness: diagnostics.notification_readiness,
+      gps_tracking_readiness: diagnostics.gps_tracking_readiness,
+      rider_communication_readiness: diagnostics.rider_communication_readiness,
       recommendations: [
         ...(unassignedRides.length > 0 ? [`Assign drivers to ${unassignedRides.length} pending rides`] : []),
         ...(unassignedVehicles.length > 0 ? [`Assign vehicles to ${unassignedVehicles.length} pending rides`] : []),
         ...(driverConflicts.length > 0 ? ['Resolve driver scheduling conflicts in dispatch board'] : []),
         ...(overloadedDrivers.length > 0 ? ['Consider distributing rides among more drivers'] : []),
         ...(failedNotifications.length > 0 ? ['Review and retry failed notification deliveries'] : []),
-        ...(participantsMissingPhone.length > 0 ? ['Add phone numbers to participant records for SMS delivery'] : []),
+        ...(participantsMissingPhone > 0 ? [`Add phone numbers to ${participantsMissingPhone} participant records for SMS delivery`] : []),
         ...(!['completed', 'cancelled'].includes('gps') ? ['Integrate GPS tracking to enable live location visibility'] : [])
       ],
       ready_for_live_dispatch: overallStatus === 'operational' && unassignedRides.length === 0 && driverConflicts.length === 0
