@@ -1,0 +1,116 @@
+{
+  "name": "Vehicle",
+  "type": "object",
+  "properties": {
+    "vehicle_id": {
+      "type": "string",
+      "description": "e.g. VAN-001"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Short display name e.g. Blue Van"
+    },
+    "make": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "year": {
+      "type": "number"
+    },
+    "plate": {
+      "type": "string"
+    },
+    "vin": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "seat_capacity": {
+      "type": "number",
+      "default": 7
+    },
+    "wheelchair_accessible": {
+      "type": "boolean",
+      "default": false
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "gasoline",
+        "diesel",
+        "hybrid",
+        "electric"
+      ],
+      "default": "gasoline"
+    },
+    "service_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "in_use",
+        "maintenance",
+        "out_of_service"
+      ],
+      "default": "available"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "assigned_driver_id": {
+      "type": "string"
+    },
+    "assigned_driver_name": {
+      "type": "string"
+    },
+    "odometer_miles": {
+      "type": "number",
+      "default": 0
+    },
+    "last_oil_change_miles": {
+      "type": "number"
+    },
+    "maintenance_due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "maintenance_due_miles": {
+      "type": "number"
+    },
+    "last_inspection_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_inspection_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "insurance_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "registration_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "make",
+    "model",
+    "plate"
+  ]
+}

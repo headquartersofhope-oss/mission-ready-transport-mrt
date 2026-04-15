@@ -1,0 +1,85 @@
+{
+  "name": "Incident",
+  "type": "object",
+  "properties": {
+    "incident_type": {
+      "type": "string",
+      "enum": [
+        "no_show_rider",
+        "no_show_driver",
+        "safety_incident",
+        "vehicle_issue",
+        "scheduling_error",
+        "rider_behavior",
+        "driver_behavior",
+        "late_pickup",
+        "late_dropoff",
+        "route_error",
+        "communication_failure",
+        "other"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "under_review",
+        "resolved",
+        "escalated",
+        "closed"
+      ],
+      "default": "open"
+    },
+    "ride_request_id": {
+      "type": "string"
+    },
+    "participant_name": {
+      "type": "string"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "vehicle_id": {
+      "type": "string"
+    },
+    "incident_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "reported_by": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "resolution_notes": {
+      "type": "string"
+    },
+    "follow_up_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "follow_up_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "escalated_to": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "incident_type",
+    "incident_date",
+    "description"
+  ]
+}

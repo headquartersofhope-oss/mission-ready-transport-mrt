@@ -3,13 +3,15 @@
   "type": "object",
   "properties": {
     "participant_id": {
-      "type": "string",
-      "description": "Unique participant identifier"
+      "type": "string"
     },
     "first_name": {
       "type": "string"
     },
     "last_name": {
+      "type": "string"
+    },
+    "preferred_name": {
       "type": "string"
     },
     "phone": {
@@ -18,23 +20,34 @@
     "email": {
       "type": "string"
     },
+    "preferred_communication": {
+      "type": "string",
+      "enum": [
+        "phone_call",
+        "text",
+        "email",
+        "staff_contact"
+      ],
+      "default": "text"
+    },
     "pickup_address": {
       "type": "string"
     },
     "pickup_notes": {
-      "type": "string",
-      "description": "Special pickup instructions"
+      "type": "string"
     },
     "transportation_restrictions": {
+      "type": "string"
+    },
+    "mobility_needs": {
       "type": "string",
-      "description": "Any restrictions on transport modes"
+      "description": "e.g. wheelchair, walker, no stairs"
     },
     "approved_service_categories": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Categories: employment, housing, health, benefits, legal, recovery, training, other"
+      }
     },
     "emergency_contact_name": {
       "type": "string"
@@ -43,15 +56,39 @@
       "type": "string"
     },
     "case_manager": {
-      "type": "string",
-      "description": "Name or email of assigned case manager"
+      "type": "string"
     },
     "linked_house": {
-      "type": "string",
-      "description": "Linked housing program or house name"
+      "type": "string"
     },
     "linked_employer": {
       "type": "string"
+    },
+    "eligibility_notes": {
+      "type": "string"
+    },
+    "no_show_count": {
+      "type": "number",
+      "default": 0
+    },
+    "cancellation_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_rides_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "reliability_rating": {
+      "type": "string",
+      "enum": [
+        "excellent",
+        "good",
+        "fair",
+        "poor",
+        "probation"
+      ],
+      "default": "good"
     },
     "status": {
       "type": "string",

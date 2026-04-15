@@ -3,8 +3,7 @@
   "type": "object",
   "properties": {
     "participant_id": {
-      "type": "string",
-      "description": "ID of the participant record"
+      "type": "string"
     },
     "participant_name": {
       "type": "string"
@@ -14,8 +13,10 @@
       "format": "date"
     },
     "pickup_time": {
-      "type": "string",
-      "description": "Requested pickup time"
+      "type": "string"
+    },
+    "appointment_time": {
+      "type": "string"
     },
     "pickup_location": {
       "type": "string"
@@ -30,15 +31,44 @@
     "return_pickup_time": {
       "type": "string"
     },
+    "return_pickup_location": {
+      "type": "string"
+    },
+    "trip_type": {
+      "type": "string",
+      "enum": [
+        "one_way",
+        "round_trip"
+      ],
+      "default": "one_way"
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false
+    },
+    "recurring_plan_id": {
+      "type": "string"
+    },
     "purpose": {
       "type": "string",
       "enum": [
+        "work_commute",
+        "job_interview",
+        "first_day_of_work",
+        "medical",
+        "counseling_treatment",
+        "court_probation",
+        "dmv_id",
+        "benefits_office",
+        "school_training",
+        "housing_appointment",
+        "grocery_essential",
+        "emergency_support",
         "employment",
-        "housing",
+        "recovery",
         "health",
         "benefits",
         "legal",
-        "recovery",
         "training",
         "court",
         "other"
@@ -56,16 +86,37 @@
     "status": {
       "type": "string",
       "enum": [
+        "requested",
         "pending",
+        "under_review",
         "approved",
         "denied",
-        "assigned",
-        "in_progress",
+        "scheduled",
+        "driver_assigned",
+        "en_route",
+        "rider_picked_up",
+        "dropped_off",
+        "return_pending",
         "completed",
+        "cancelled",
         "no_show",
-        "cancelled"
+        "incident_review",
+        "in_progress",
+        "assigned"
       ],
-      "default": "pending"
+      "default": "requested"
+    },
+    "assigned_driver_id": {
+      "type": "string"
+    },
+    "assigned_driver_name": {
+      "type": "string"
+    },
+    "assigned_vehicle_id": {
+      "type": "string"
+    },
+    "assigned_vehicle_name": {
+      "type": "string"
     },
     "assigned_provider_id": {
       "type": "string"
@@ -77,6 +128,9 @@
       "type": "string"
     },
     "special_instructions": {
+      "type": "string"
+    },
+    "linked_program": {
       "type": "string"
     },
     "estimated_cost": {
@@ -92,22 +146,32 @@
       "type": "number",
       "default": 0
     },
+    "driver_notes": {
+      "type": "string"
+    },
     "post_ride_notes": {
       "type": "string"
+    },
+    "delay_minutes": {
+      "type": "number"
     },
     "completed_at": {
       "type": "string"
     },
+    "picked_up_at": {
+      "type": "string"
+    },
+    "dropped_off_at": {
+      "type": "string"
+    },
     "submitted_by": {
-      "type": "string",
-      "description": "Email of requester"
+      "type": "string"
     },
     "approved_by": {
       "type": "string"
     },
-    "recurring_plan_id": {
-      "type": "string",
-      "description": "Link to recurring plan if applicable"
+    "service_zone": {
+      "type": "string"
     }
   },
   "required": [

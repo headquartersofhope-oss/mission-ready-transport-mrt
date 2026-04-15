@@ -14,6 +14,10 @@ import Providers from './pages/Providers';
 import RecurringPlans from './pages/RecurringPlans';
 import CostTracking from './pages/CostTracking';
 import Reports from './pages/Reports';
+import Drivers from './pages/Drivers';
+import Vehicles from './pages/Vehicles';
+import Incidents from './pages/Incidents';
+import DriverPortal from './pages/DriverPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,9 +48,13 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<DispatchDashboard />} />
         <Route path="/requests" element={<Requests />} />
         <Route path="/participants" element={<Participants />} />
+        <Route path="/drivers" element={<Drivers />} />
+        <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/providers" element={<Providers />} />
         <Route path="/recurring" element={<RecurringPlans />} />
         <Route path="/costs" element={<CostTracking />} />
+        <Route path="/incidents" element={<Incidents />} />
+        <Route path="/driver-portal" element={<DriverPortal />} />
         <Route path="/reports" element={<Reports />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
