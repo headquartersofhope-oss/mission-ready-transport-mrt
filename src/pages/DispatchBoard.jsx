@@ -55,12 +55,13 @@ function getHour(timeStr) {
   return h;
 }
 
-function RideBlock({ ride, onAssign, drivers, vehicles, onMoveVehicle }) {
+function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
   const [open, setOpen] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(ride.assigned_driver_id || '');
   const [selectedVehicle, setSelectedVehicle] = useState(ride.assigned_vehicle_id || '');
   const navigate = useNavigate();
+  const conflictWarning = selectedDriver && selectedDriver !== ride.assigned_driver_id && wouldConflict?.(selectedDriver, ride.id, ride.request_date, ride.pickup_time);
 
   const sc = STATUS_CONFIG[ride.status] || STATUS_CONFIG.requested;
   const isUnassigned = !ride.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied'].includes(ride.status);
@@ -138,9 +139,15 @@ function RideBlock({ ride, onAssign, drivers, vehicles, onMoveVehicle }) {
           {!['completed', 'cancelled', 'no_show', 'denied'].includes(ride.status) && (
             <div className="space-y-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Assign</p>
+              {conflictWarning && (
+                <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 dark:bg-red-950/30 border border-red-200/60 p-2 rounded">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  Driver conflict detected — this driver has another ride within 90 min
+                </div>
+              )}
               <div className="flex gap-2 flex-wrap">
                 <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-                  <SelectTrigger className="h-8 text-xs flex-1 min-w-[140px]">
+                  <SelectTrigger className={`h-8 text-xs flex-1 min-w-[140px] ${conflictWarning ? 'border-red-400' : ''}`}>
                     <SelectValue placeholder="Select driver…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -148,6 +155,7 @@ function RideBlock({ ride, onAssign, drivers, vehicles, onMoveVehicle }) {
                     {drivers.filter(d => d.status === 'active').map(d => (
                       <SelectItem key={d.id} value={d.id}>
                         {d.first_name} {d.last_name} {d.availability === 'on_duty' ? '●' : '○'}
+                        {d.license_status === 'expired' ? ' ⚠️' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -160,13 +168,14 @@ function RideBlock({ ride, onAssign, drivers, vehicles, onMoveVehicle }) {
                     <SelectItem value={null}>— No vehicle —</SelectItem>
                     {vehicles.filter(v => v.status === 'active').map(v => (
                       <SelectItem key={v.id} value={v.id}>
-                        {v.nickname || `${v.make} ${v.model}`} ({v.service_status})
+                        {v.nickname || `${v.make} ${v.model}`} ({v.service_status}) Cap:{v.seat_capacity}
+                        {v.wheelchair_accessible ? ' ♿' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button size="sm" className="h-8 text-xs" onClick={handleAssign} disabled={assigning}>
-                  {assigning ? 'Saving…' : 'Apply'}
+                <Button size="sm" className={`h-8 text-xs ${conflictWarning ? 'bg-amber-500 hover:bg-amber-600' : ''}`} onClick={handleAssign} disabled={assigning}>
+                  {assigning ? 'Saving…' : conflictWarning ? 'Force Assign' : 'Apply'}
                 </Button>
               </div>
             </div>
@@ -183,7 +192,7 @@ function RideBlock({ ride, onAssign, drivers, vehicles, onMoveVehicle }) {
   );
 }
 
-function VehicleLane({ vehicle, rides, drivers, onAssign }) {
+function VehicleLane({ vehicle, rides, drivers, onAssign, wouldConflict }) {
   const activeRides = rides.filter(r => !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status));
   const completed = rides.filter(r => r.status === 'completed');
 
@@ -212,7 +221,7 @@ function VehicleLane({ vehicle, rides, drivers, onAssign }) {
         ) : (
           <div className="space-y-2">
             {rides.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-              <RideBlock key={ride.id} ride={ride} onAssign={onAssign} drivers={drivers} vehicles={[vehicle]} />
+              <RideBlock key={ride.id} ride={ride} onAssign={onAssign} drivers={drivers} vehicles={[vehicle]} wouldConflict={wouldConflict} />
             ))}
           </div>
         )}
@@ -239,17 +248,37 @@ export default function DispatchBoard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transport-requests'] }),
   });
 
+  // Detect if assigning driverId to a ride on `date` at `time` would conflict
+  const wouldConflict = (driverId, rideId, rideDate, rideTime) => {
+    if (!driverId || !rideTime) return false;
+    const [rh, rm] = rideTime.split(':').map(Number);
+    const rMin = rh * 60 + (rm || 0);
+    return allRequests.some(r =>
+      r.id !== rideId &&
+      r.assigned_driver_id === driverId &&
+      r.request_date === rideDate &&
+      r.pickup_time &&
+      !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status) &&
+      (() => { const [h, m] = r.pickup_time.split(':').map(Number); return Math.abs(h * 60 + (m || 0) - rMin) < 90; })()
+    );
+  };
+
   const handleAssign = async (rideId, driverId, vehicleId) => {
     const driver = drivers.find(d => d.id === driverId);
     const vehicle = vehicles.find(v => v.id === vehicleId);
+    const ride = allRequests.find(r => r.id === rideId);
     const update = {};
-    if (driver) { update.assigned_driver_id = driver.id; update.assigned_driver_name = `${driver.first_name} ${driver.last_name}`; }
+    if (driver) {
+      // Warn but still allow — dispatcher makes final call
+      update.assigned_driver_id = driver.id;
+      update.assigned_driver_name = `${driver.first_name} ${driver.last_name}`;
+    }
     if (vehicleId === '') { update.assigned_vehicle_id = ''; update.assigned_vehicle_name = ''; }
     else if (vehicle) { update.assigned_vehicle_id = vehicle.id; update.assigned_vehicle_name = vehicle.nickname || `${vehicle.make} ${vehicle.model}`; }
     if (Object.keys(update).length > 0) {
-      if (!['completed', 'cancelled', 'no_show', 'denied', 'en_route', 'rider_picked_up'].includes(
-        allRequests.find(r => r.id === rideId)?.status
-      )) { update.status = 'driver_assigned'; }
+      if (!['completed', 'cancelled', 'no_show', 'denied', 'en_route', 'rider_picked_up'].includes(ride?.status)) {
+        update.status = 'driver_assigned';
+      }
       await updateMutation.mutateAsync({ id: rideId, data: update });
     }
   };
@@ -296,6 +325,30 @@ export default function DispatchBoard() {
     return map;
   }, [dateRides, vehicles]);
 
+  // Detect driver conflicts for today's date
+  const driverConflictNames = useMemo(() => {
+    const active = dateRides.filter(r => r.assigned_driver_id && r.pickup_time && !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status));
+    const map = {};
+    active.forEach(r => {
+      const k = r.assigned_driver_id;
+      if (!map[k]) map[k] = [];
+      map[k].push(r);
+    });
+    const names = new Set();
+    Object.values(map).forEach(group => {
+      for (let i = 0; i < group.length; i++) {
+        for (let j = i + 1; j < group.length; j++) {
+          const [h1, m1] = (group[i].pickup_time || '').split(':').map(Number);
+          const [h2, m2] = (group[j].pickup_time || '').split(':').map(Number);
+          if (!isNaN(h1) && !isNaN(h2) && Math.abs((h1 * 60 + (m1 || 0)) - (h2 * 60 + (m2 || 0))) < 90) {
+            names.add(group[i].assigned_driver_name);
+          }
+        }
+      }
+    });
+    return [...names];
+  }, [dateRides]);
+
   const summary = useMemo(() => ({
     total: dateRides.length,
     unassigned: dateRides.filter(r => !r.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status)).length,
@@ -303,7 +356,8 @@ export default function DispatchBoard() {
     completed: dateRides.filter(r => r.status === 'completed').length,
     urgent: dateRides.filter(r => r.priority === 'urgent').length,
     returnTrips: dateRides.filter(r => r.return_trip).length,
-  }), [dateRides]);
+    conflicts: driverConflictNames.length,
+  }), [dateRides, driverConflictNames]);
 
   const toggleBlock = (id) => setCollapsedBlocks(p => ({ ...p, [id]: !p[id] }));
   const uniqueDriverNames = [...new Set(allRequests.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name))];
@@ -329,14 +383,15 @@ export default function DispatchBoard() {
       </div>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
         {[
           { label: 'Total Rides', val: summary.total, color: 'text-foreground', bg: 'bg-muted/50' },
-          { label: 'Unassigned', val: summary.unassigned, color: 'text-red-600', bg: 'bg-red-500/8' },
+          { label: 'Unassigned', val: summary.unassigned, color: summary.unassigned > 0 ? 'text-red-600' : 'text-emerald-600', bg: summary.unassigned > 0 ? 'bg-red-500/8' : 'bg-emerald-500/8' },
           { label: 'Live Now', val: summary.active, color: 'text-amber-600', bg: 'bg-amber-500/8' },
           { label: 'Completed', val: summary.completed, color: 'text-emerald-600', bg: 'bg-emerald-500/8' },
-          { label: 'Urgent', val: summary.urgent, color: 'text-red-700', bg: 'bg-red-500/8' },
+          { label: 'Urgent', val: summary.urgent, color: summary.urgent > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.urgent > 0 ? 'bg-red-500/8' : 'bg-muted/30' },
           { label: 'Round Trips', val: summary.returnTrips, color: 'text-blue-600', bg: 'bg-blue-500/8' },
+          { label: 'Conflicts', val: summary.conflicts, color: summary.conflicts > 0 ? 'text-red-700 font-bold' : 'text-muted-foreground', bg: summary.conflicts > 0 ? 'bg-red-500/15' : 'bg-muted/30' },
         ].map(s => (
           <div key={s.label} className={`rounded-lg p-3 ${s.bg} text-center`}>
             <p className={`text-xl font-bold ${s.color}`}>{s.val}</p>
@@ -344,6 +399,12 @@ export default function DispatchBoard() {
           </div>
         ))}
       </div>
+      {driverConflictNames.length > 0 && (
+        <div className="flex items-center gap-2 p-2.5 bg-red-500/8 border border-red-400/30 rounded-lg text-xs text-red-600 font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          Double-booking conflict: {driverConflictNames.join(', ')} — expand those rides to resolve
+        </div>
+      )}
 
       {/* Filters + View Switcher */}
       <div className="flex flex-wrap items-center gap-2">
@@ -413,7 +474,7 @@ export default function DispatchBoard() {
                       if (pDiff !== 0) return pDiff;
                       return (a.pickup_time || '').localeCompare(b.pickup_time || '');
                     }).map(ride => (
-                      <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} />
+                      <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
                     ))}
                   </div>
                 )}
@@ -459,7 +520,7 @@ export default function DispatchBoard() {
                 </CardHeader>
                 <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                   {rides.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} />
+                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
                   ))}
                 </CardContent>
               </Card>
@@ -473,7 +534,7 @@ export default function DispatchBoard() {
         <div className="space-y-4">
           {Object.entries(ridesByVehicle).map(([id, { vehicle, rides }]) => {
             if (rides.length === 0 && vehicle.service_status !== 'available') return null;
-            return <VehicleLane key={id} vehicle={vehicle} rides={rides} drivers={drivers} onAssign={handleAssign} />;
+            return <VehicleLane key={id} vehicle={vehicle} rides={rides} drivers={drivers} onAssign={handleAssign} wouldConflict={wouldConflict} />;
           })}
           {/* Unassigned to any vehicle */}
           {(() => {
@@ -489,7 +550,7 @@ export default function DispatchBoard() {
                 </CardHeader>
                 <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                   {noVehicle.sort((a, b) => (a.pickup_time || '').localeCompare(b.pickup_time || '')).map(ride => (
-                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} />
+                    <RideBlock key={ride.id} ride={ride} onAssign={handleAssign} drivers={drivers} vehicles={vehicles} wouldConflict={wouldConflict} />
                   ))}
                 </CardContent>
               </Card>

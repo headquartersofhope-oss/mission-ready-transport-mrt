@@ -109,15 +109,17 @@ export function checkDriverDoubleBookings(requests) {
       for (let j = i + 1; j < group.length; j++) {
         const a = parseTime(group[i].pickup_time);
         const b = parseTime(group[j].pickup_time);
-        if (a !== null && b !== null && Math.abs(a - b) < 60) {
+        // Flag within 90 min window — realistic single-driver transit buffer
+        if (a !== null && b !== null && Math.abs(a - b) < 90) {
+          const gap = Math.abs(a - b);
           conflicts.push({
             id: `driver-conflict-${group[i].id}-${group[j].id}`,
             module: 'scheduling',
-            severity: 'critical',
-            title: 'Driver double-booked within 60 minutes',
+            severity: gap < 30 ? 'critical' : 'high',
+            title: `Driver double-booked — ${gap} min apart`,
             detail: `${group[i].assigned_driver_name} — ${group[i].pickup_time} (${group[i].participant_name}) and ${group[j].pickup_time} (${group[j].participant_name}) on ${group[i].request_date}`,
-            cause: 'Two rides assigned to the same driver at overlapping times',
-            fix: 'Reassign one ride to another available driver',
+            cause: 'Two rides assigned to the same driver with insufficient travel buffer',
+            fix: 'Reassign one ride to another available driver or adjust pickup times',
             owner: 'Dispatcher',
           });
         }
@@ -344,27 +346,114 @@ export function checkOrphanedRecurringPlans(plans, participants) {
 
 // ─── PATTERN ANALYSIS (AI-style heuristics) ────────────────────────────────
 
+export function checkMissingFundingSource(requests) {
+  const issues = requests.filter(r =>
+    r.is_billable !== false && !r.funding_source && !r.funding_source_type &&
+    ['completed', 'approved', 'scheduled', 'driver_assigned'].includes(r.status)
+  );
+  return issues.map(r => ({
+    id: `no-funding-${r.id}`,
+    module: 'data_quality',
+    severity: 'low',
+    title: 'Billable ride has no funding source',
+    detail: `${r.participant_name} — ${r.request_date}, status: ${r.status}`,
+    cause: 'Funding source not set on a ride flagged as billable',
+    fix: 'Edit the ride and assign a funding source or funding source type',
+    owner: 'Case Manager',
+    recordId: r.id,
+  }));
+}
+
+export function checkExpiredDriverLicenses(drivers) {
+  return drivers
+    .filter(d => d.status === 'active' && d.license_status === 'expired')
+    .map(d => ({
+      id: `expired-license-${d.id}`,
+      module: 'drivers',
+      severity: 'critical',
+      title: 'Active driver has expired license',
+      detail: `${d.first_name} ${d.last_name} — license expired (${d.license_expiry || 'no date on file'})`,
+      cause: 'License renewal not tracked or overdue',
+      fix: 'Suspend dispatch for this driver until license is renewed and updated',
+      owner: 'Operations Manager',
+      recordId: d.id,
+    }));
+}
+
+export function checkUnlinkedDriverPortals(drivers) {
+  return drivers
+    .filter(d => d.status === 'active' && !d.linked_user_email)
+    .map(d => ({
+      id: `no-portal-${d.id}`,
+      module: 'drivers',
+      severity: 'low',
+      title: 'Driver has no portal login linked',
+      detail: `${d.first_name} ${d.last_name} — no linked_user_email set`,
+      cause: 'Driver was added without linking a system user account',
+      fix: 'Edit the driver record and set the Linked User Email so they can access the Driver Portal',
+      owner: 'Admin',
+      recordId: d.id,
+    }));
+}
+
+export function checkRecurringPlanExpiry(plans) {
+  const today = new Date().toISOString().split('T')[0];
+  return plans
+    .filter(p => p.status === 'active' && p.end_date && p.end_date < today)
+    .map(p => ({
+      id: `expired-plan-${p.id}`,
+      module: 'scheduling',
+      severity: 'medium',
+      title: 'Active recurring plan is past its end date',
+      detail: `${p.participant_name} — ${p.purpose?.replace(/_/g, ' ')}, ended ${p.end_date}`,
+      cause: 'Plan was not deactivated when the end date passed',
+      fix: 'Mark this plan as completed or extend the end date if still active',
+      owner: 'Case Manager',
+      recordId: p.id,
+    }));
+}
+
+export function checkVehicleInsurance(vehicles) {
+  const soon = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+  return vehicles
+    .filter(v => v.status === 'active' && v.insurance_expiry && v.insurance_expiry <= soon)
+    .map(v => ({
+      id: `ins-expiry-${v.id}`,
+      module: 'vehicles',
+      severity: v.insurance_expiry < today ? 'critical' : 'high',
+      title: v.insurance_expiry < today ? 'Vehicle insurance EXPIRED' : 'Vehicle insurance expiring within 30 days',
+      detail: `${v.nickname || v.plate} — expires ${v.insurance_expiry}`,
+      cause: 'Insurance renewal not completed',
+      fix: v.insurance_expiry < today ? 'Remove from service immediately until insurance is renewed' : 'Renew insurance before expiry',
+      owner: 'Fleet Manager',
+      recordId: v.id,
+    }));
+}
+
 export function analyzeDispatchPatterns(requests, drivers) {
   const insights = [];
 
-  // Overloaded drivers
-  const driverRideCount = {};
+  // Overloaded drivers — flag at >5 open rides on a single day
+  const driverDayMap = {};
   const activeRides = requests.filter(r => !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status));
   activeRides.forEach(r => {
-    if (r.assigned_driver_name) {
-      driverRideCount[r.assigned_driver_name] = (driverRideCount[r.assigned_driver_name] || 0) + 1;
+    if (r.assigned_driver_name && r.request_date) {
+      const k = `${r.assigned_driver_name}|${r.request_date}`;
+      driverDayMap[k] = (driverDayMap[k] || 0) + 1;
     }
   });
-  Object.entries(driverRideCount).forEach(([name, count]) => {
-    if (count > 6) {
+  Object.entries(driverDayMap).forEach(([key, count]) => {
+    if (count > 5) {
+      const [name, date] = key.split('|');
       insights.push({
-        id: `overloaded-${name}`,
+        id: `overloaded-${key}`,
         module: 'dispatch',
         severity: 'medium',
-        title: 'Driver appears overloaded',
-        detail: `${name} has ${count} active open rides assigned`,
-        cause: 'Dispatch concentration on a single driver',
-        fix: 'Redistribute some rides to available drivers',
+        title: 'Driver overloaded on a single day',
+        detail: `${name} — ${count} rides on ${date}`,
+        cause: 'Dispatch concentration on one driver in a single day',
+        fix: 'Redistribute to other available drivers or stagger times',
         owner: 'Dispatcher',
         type: 'pattern',
       });
@@ -382,9 +471,9 @@ export function analyzeDispatchPatterns(requests, drivers) {
       module: 'dispatch',
       severity: 'critical',
       title: 'Urgent rides have no driver assigned',
-      detail: `${urgentUnassigned.length} urgent ride(s) pending assignment`,
+      detail: `${urgentUnassigned.length} urgent ride(s): ${urgentUnassigned.map(r => r.participant_name).join(', ')}`,
       cause: 'High-priority requests not being dispatched first',
-      fix: 'Sort dispatch queue by priority and assign immediately',
+      fix: 'Open Dispatch Board and assign immediately',
       owner: 'Dispatcher',
       type: 'pattern',
     });
@@ -399,8 +488,8 @@ export function analyzeDispatchPatterns(requests, drivers) {
       id: 'purpose-concentration',
       module: 'scheduling',
       severity: 'low',
-      title: 'Ride demand highly concentrated on one purpose',
-      detail: `"${topPurpose[0].replace(/_/g, ' ')}" accounts for ${Math.round(topPurpose[1] / requests.length * 100)}% of all rides`,
+      title: 'Ride demand concentrated on one purpose',
+      detail: `"${topPurpose[0].replace(/_/g, ' ')}" = ${Math.round(topPurpose[1] / requests.length * 100)}% of all rides`,
       cause: 'Single service type driving most transport volume',
       fix: 'Consider dedicated scheduling blocks for this purpose type',
       owner: 'Operations Manager',
@@ -408,18 +497,18 @@ export function analyzeDispatchPatterns(requests, drivers) {
     });
   }
 
-  // Drivers with no rides
-  const assignedDriverNames = new Set(requests.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name));
+  // Drivers with no rides at all
+  const assignedDriverNames = new Set(activeRides.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name));
   const unusedDrivers = drivers.filter(d => d.status === 'active' && !assignedDriverNames.has(`${d.first_name} ${d.last_name}`));
-  if (unusedDrivers.length > 0) {
+  if (unusedDrivers.length > 0 && drivers.filter(d => d.status === 'active').length > 1) {
     insights.push({
       id: 'unused-drivers',
       module: 'dispatch',
       severity: 'low',
-      title: 'Active drivers with no ride assignments',
-      detail: `${unusedDrivers.length} active driver(s) not assigned to any current ride`,
+      title: 'Active drivers with zero open ride assignments',
+      detail: `${unusedDrivers.map(d => `${d.first_name} ${d.last_name}`).join(', ')}`,
       cause: 'Driver capacity not being utilized',
-      fix: 'Review workload distribution and balance assignments',
+      fix: 'Review workload distribution and balance open assignments',
       owner: 'Dispatcher',
       type: 'pattern',
     });
@@ -466,11 +555,16 @@ export function runFullDiagnostic({ requests, drivers, vehicles, participants, i
     ...checkRepeatedNoShows(participants),
     ...checkOpenIncidents(incidents),
     ...checkDriverSetup(drivers),
+    ...checkExpiredDriverLicenses(drivers),
+    ...checkUnlinkedDriverPortals(drivers),
     ...checkVehicleMaintenance(vehicles),
+    ...checkVehicleInsurance(vehicles),
     ...checkStaleClients(participants),
     ...checkDuplicateClients(participants),
     ...checkDuplicateDrivers(drivers),
     ...checkOrphanedRecurringPlans(recurringPlans, participants),
+    ...checkRecurringPlanExpiry(recurringPlans),
+    ...checkMissingFundingSource(requests),
     ...analyzeDispatchPatterns(requests, drivers),
   ];
 

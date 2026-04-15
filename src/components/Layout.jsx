@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, FileText, Truck, RefreshCw,
   DollarSign, BarChart3, Menu, X, LogOut, ChevronRight,
-  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, Layers
+  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -10,28 +10,33 @@ import { Badge } from '@/components/ui/badge';
 
 const navSections = [
   {
-    label: 'Operations',
+    label: 'Dispatch',
     items: [
-      { path: '/', label: 'Dispatch Overview', icon: LayoutDashboard },
+      { path: '/', label: 'Overview', icon: LayoutDashboard },
       { path: '/dispatch-board', label: 'Dispatch Board', icon: Truck },
       { path: '/requests', label: 'Ride Requests', icon: FileText },
-      { path: '/driver-board', label: 'Driver Board', icon: Navigation },
     ]
   },
   {
-    label: 'Management',
+    label: 'Drivers & Fleet',
     items: [
-      { path: '/participants', label: 'Clients', icon: Users },
-      { path: '/drivers', label: 'Drivers', icon: UserCheck },
-      { path: '/vehicles', label: 'Fleet', icon: Car },
-      { path: '/providers', label: 'Providers', icon: Truck },
+      { path: '/driver-board', label: 'Driver Portal', icon: Navigation },
+      { path: '/drivers', label: 'Driver Management', icon: UserCheck },
+      { path: '/vehicles', label: 'Vehicle Fleet', icon: Car },
     ]
   },
   {
-    label: 'Planning & Analytics',
+    label: 'Clients & Programs',
     items: [
+      { path: '/participants', label: 'Client Registry', icon: Users },
       { path: '/recurring', label: 'Recurring Plans', icon: RefreshCw },
-      { path: '/costs', label: 'Cost Tracking', icon: DollarSign },
+      { path: '/providers', label: 'Transport Providers', icon: MapPin },
+    ]
+  },
+  {
+    label: 'Analytics & Quality',
+    items: [
+      { path: '/costs', label: 'Cost & Funding', icon: DollarSign },
       { path: '/incidents', label: 'Incidents', icon: AlertTriangle },
       { path: '/reports', label: 'Reports', icon: BarChart3 },
       { path: '/audit', label: 'Audit & Diagnostics', icon: ShieldCheck },

@@ -449,15 +449,38 @@ function QueryPanel({ requests, drivers, vehicles, participants, incidents, recu
     setLoading(true);
     setResult(null);
     const systemData = {
-      requests: requests.slice(0, 100).map(r => ({ id: r.id, participant: r.participant_name, date: r.request_date, time: r.pickup_time, status: r.status, priority: r.priority, driver: r.assigned_driver_name, vehicle: r.assigned_vehicle_name, purpose: r.purpose })),
-      drivers: drivers.map(d => ({ name: `${d.first_name} ${d.last_name}`, status: d.status, availability: d.availability, on_time_rate: d.on_time_rate, ride_count: requests.filter(r => r.assigned_driver_name === `${d.first_name} ${d.last_name}`).length })),
-      vehicles: vehicles.map(v => ({ id: v.vehicle_id, name: v.nickname || `${v.make} ${v.model}`, status: v.service_status, rides: requests.filter(r => r.assigned_vehicle_id === v.id).length })),
-      participants: participants.map(p => ({ name: `${p.first_name} ${p.last_name}`, no_shows: p.no_show_count, cancellations: p.cancellation_count, total_rides: p.total_rides_completed, reliability: p.reliability_rating, status: p.status })),
-      recurringPlans: recurringPlans.filter(p => p.status === 'active').map(p => ({ participant: p.participant_name, purpose: p.purpose, days: p.weekday_pattern, status: p.status })),
+      requests: requests.slice(0, 150).map(r => ({
+        id: r.id, participant: r.participant_name, date: r.request_date, time: r.pickup_time,
+        status: r.status, priority: r.priority, driver: r.assigned_driver_name, vehicle: r.assigned_vehicle_name,
+        purpose: r.purpose, program_category: r.program_category, funding_source: r.funding_source,
+        funding_source_type: r.funding_source_type, actual_cost: r.actual_cost, estimated_cost: r.estimated_cost,
+        is_billable: r.is_billable, is_recurring: r.is_recurring,
+      })),
+      drivers: drivers.map(d => ({
+        name: `${d.first_name} ${d.last_name}`, status: d.status, availability: d.availability,
+        on_time_rate: d.on_time_rate, license_status: d.license_status,
+        ride_count: requests.filter(r => r.assigned_driver_name === `${d.first_name} ${d.last_name}`).length
+      })),
+      vehicles: vehicles.map(v => ({
+        id: v.vehicle_id, name: v.nickname || `${v.make} ${v.model}`,
+        status: v.service_status, capacity: v.seat_capacity, wheelchair: v.wheelchair_accessible,
+        rides: requests.filter(r => r.assigned_vehicle_id === v.id).length
+      })),
+      participants: participants.map(p => ({
+        name: `${p.first_name} ${p.last_name}`, no_shows: p.no_show_count,
+        cancellations: p.cancellation_count, total_rides: p.total_rides_completed,
+        reliability: p.reliability_rating, status: p.status, mobility_needs: p.mobility_needs
+      })),
+      recurringPlans: recurringPlans.filter(p => p.status === 'active').map(p => ({
+        participant: p.participant_name, purpose: p.purpose, days: p.weekday_pattern,
+        status: p.status, funding: p.funding_source
+      })),
       summary: {
-        totalRequests: requests.length, completedRides: requests.filter(r => r.status === 'completed').length,
+        totalRequests: requests.length,
+        completedRides: requests.filter(r => r.status === 'completed').length,
         openIncidents: incidents.filter(i => ['open', 'under_review'].includes(i.status)).length,
         unassignedRides: requests.filter(r => ['approved', 'scheduled'].includes(r.status) && !r.assigned_driver_id).length,
+        totalCost: requests.filter(r => r.status === 'completed').reduce((s, r) => s + (r.actual_cost || r.estimated_cost || 0), 0),
       }
     };
     const res = await base44.functions.invoke('aiOpsIntelligence', { mode: 'ops_query', data: { systemData, question } });
@@ -592,9 +615,21 @@ export default function AiIntelligence() {
           <AiModuleShell title="AI Dispatch Assistant" icon={Truck} runLabel="Analyze Open Rides"
             description="Reviews open rides and recommends driver/vehicle assignments, dispatch order, risk flags, and trip groupings."
             onRun={() => run('dispatch_assistant', {
-              openRides: openRides.map(r => ({ id: r.id, participant_name: r.participant_name, date: r.request_date, time: r.pickup_time, pickup: r.pickup_location, dropoff: r.dropoff_location, priority: r.priority, status: r.status, purpose: r.purpose, mobility_needs: r.special_instructions, return_trip: r.return_trip })),
-              drivers: activeDrivers.map(d => ({ id: d.id, name: `${d.first_name} ${d.last_name}`, availability: d.availability, vehicle: d.assigned_vehicle_name, shift: d.shift_schedule, on_time_rate: d.on_time_rate })),
-              vehicles: vehicles.filter(v => v.service_status === 'available').map(v => ({ id: v.id, name: v.nickname || `${v.make} ${v.model}`, capacity: v.seat_capacity, wheelchair: v.wheelchair_accessible }))
+              openRides: openRides.map(r => ({
+                id: r.id, participant_name: r.participant_name, date: r.request_date, time: r.pickup_time,
+                pickup: r.pickup_location, dropoff: r.dropoff_location, priority: r.priority, status: r.status,
+                purpose: r.purpose, mobility_needs: r.special_instructions, return_trip: r.return_trip,
+                funding_source: r.funding_source, is_billable: r.is_billable
+              })),
+              drivers: activeDrivers.map(d => ({
+                id: d.id, name: `${d.first_name} ${d.last_name}`, availability: d.availability,
+                vehicle: d.assigned_vehicle_name, shift: d.shift_schedule, on_time_rate: d.on_time_rate,
+                license_status: d.license_status, service_area: d.service_area
+              })),
+              vehicles: vehicles.filter(v => v.service_status === 'available' && v.status === 'active').map(v => ({
+                id: v.id, name: v.nickname || `${v.make} ${v.model}`, capacity: v.seat_capacity,
+                wheelchair: v.wheelchair_accessible, assigned_driver: v.assigned_driver_name
+              }))
             })}
             loading={loading.dispatch_assistant} hasResult={!!results.dispatch_assistant}>
             {results.dispatch_assistant && <DispatchResult r={results.dispatch_assistant} />}

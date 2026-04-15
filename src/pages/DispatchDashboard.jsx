@@ -41,19 +41,23 @@ function StatCard({ label, value, icon: Icon, color, subtext, onClick }) {
   );
 }
 
-function AlertBanner({ rides, drivers, vehicles }) {
+function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
   const alerts = [];
+  const today = new Date().toISOString().split('T')[0];
   const urgentRides = rides.filter(r => r.priority === 'urgent' && !['completed', 'cancelled', 'no_show'].includes(r.status));
-  const unassignedApproved = rides.filter(r => r.status === 'approved' && !r.assigned_driver_name);
-  const noShowToday = rides.filter(r => r.status === 'no_show');
-  const expiredLicenses = drivers.filter(d => d.license_status === 'expired' || d.license_status === 'expiring_soon');
-  const maintenanceDue = vehicles.filter(v => v.maintenance_due_date && new Date(v.maintenance_due_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  const unassignedActive = rides.filter(r => r.request_date >= today && !r.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied', 'requested', 'pending'].includes(r.status));
+  const expiredLicenses = drivers.filter(d => d.license_status === 'expired');
+  const expiringLicenses = drivers.filter(d => d.license_status === 'expiring_soon');
+  const maintenanceOverdue = vehicles.filter(v => v.maintenance_due_date && new Date(v.maintenance_due_date) < new Date());
+  const insuranceExpiring = vehicles.filter(v => v.insurance_expiry && new Date(v.insurance_expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
-  if (urgentRides.length) alerts.push({ type: 'urgent', text: `${urgentRides.length} urgent ride${urgentRides.length > 1 ? 's' : ''} need immediate attention`, color: 'red' });
-  if (unassignedApproved.length) alerts.push({ type: 'assignment', text: `${unassignedApproved.length} approved ride${unassignedApproved.length > 1 ? 's' : ''} not yet assigned to a driver`, color: 'amber' });
-  if (noShowToday.length) alerts.push({ type: 'noshow', text: `${noShowToday.length} no-show${noShowToday.length > 1 ? 's' : ''} recorded today`, color: 'amber' });
-  if (expiredLicenses.length) alerts.push({ type: 'license', text: `${expiredLicenses.length} driver license${expiredLicenses.length > 1 ? 's' : ''} expired or expiring soon`, color: 'amber' });
-  if (maintenanceDue.length) alerts.push({ type: 'maintenance', text: `${maintenanceDue.length} vehicle${maintenanceDue.length > 1 ? 's' : ''} have maintenance due within 7 days`, color: 'amber' });
+  if (driverConflicts.length) alerts.push({ text: `Double-booking detected for: ${driverConflicts.join(', ')}`, color: 'red' });
+  if (urgentRides.length) alerts.push({ text: `${urgentRides.length} urgent ride${urgentRides.length > 1 ? 's' : ''} need immediate attention`, color: 'red' });
+  if (unassignedActive.length) alerts.push({ text: `${unassignedActive.length} approved/scheduled ride${unassignedActive.length > 1 ? 's' : ''} not yet assigned to a driver`, color: 'amber' });
+  if (expiredLicenses.length) alerts.push({ text: `${expiredLicenses.map(d => `${d.first_name} ${d.last_name}`).join(', ')} — license EXPIRED, cannot dispatch`, color: 'red' });
+  if (expiringLicenses.length) alerts.push({ text: `${expiringLicenses.length} driver license${expiringLicenses.length > 1 ? 's' : ''} expiring soon — renew before dispatch`, color: 'amber' });
+  if (maintenanceOverdue.length) alerts.push({ text: `${maintenanceOverdue.map(v => v.nickname || v.plate).join(', ')} — maintenance overdue`, color: 'amber' });
+  if (insuranceExpiring.length) alerts.push({ text: `${insuranceExpiring.length} vehicle insurance${insuranceExpiring.length > 1 ? 's' : ''} expire within 30 days`, color: 'amber' });
 
   if (alerts.length === 0) return (
     <div className="flex items-center gap-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
@@ -63,10 +67,10 @@ function AlertBanner({ rides, drivers, vehicles }) {
   );
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {alerts.map((alert, i) => (
-        <div key={i} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium
-          ${alert.color === 'red' ? 'bg-red-500/5 border-red-500/20 text-red-600' : 'bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400'}`}>
+        <div key={i} className={`flex items-center gap-2 p-2.5 rounded-lg border text-sm font-medium
+          ${alert.color === 'red' ? 'bg-red-500/8 border-red-500/20 text-red-600' : 'bg-amber-500/8 border-amber-500/20 text-amber-700'}`}>
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {alert.text}
         </div>
@@ -103,14 +107,11 @@ export default function DispatchDashboard() {
 
   const stats = useMemo(() => {
     const dateRides = allRequests.filter(r => r.request_date === dateFilter);
-    const todayRides = allRequests.filter(r => r.request_date === today);
     const pending = allRequests.filter(r => ['pending', 'requested', 'under_review'].includes(r.status));
     const approved = allRequests.filter(r => r.status === 'approved');
-    const assigned = allRequests.filter(r => ['driver_assigned', 'scheduled', 'assigned'].includes(r.status));
     const inProgress = allRequests.filter(r => ['en_route', 'rider_picked_up', 'dropped_off', 'return_pending', 'in_progress'].includes(r.status));
     const completed = allRequests.filter(r => r.status === 'completed');
     const noShows = allRequests.filter(r => r.status === 'no_show');
-    const cancelled = allRequests.filter(r => r.status === 'cancelled');
     const highPriority = allRequests.filter(r => (r.priority === 'high' || r.priority === 'urgent') && !['completed', 'cancelled', 'denied', 'no_show'].includes(r.status));
     const totalCost = completed.reduce((sum, r) => sum + (r.actual_cost || r.estimated_cost || 0), 0);
     const activeRecurring = recurringPlans.filter(p => p.status === 'active');
@@ -119,16 +120,36 @@ export default function DispatchDashboard() {
     const availableVehicles = vehicles.filter(v => v.service_status === 'available' && v.status === 'active');
     const outOfServiceVehicles = vehicles.filter(v => v.service_status === 'out_of_service' || v.service_status === 'maintenance');
 
-    const dateFiltered = dateFilter === today ? dateRides : allRequests.filter(r => r.request_date === dateFilter);
-    const driverFiltered = driverFilter === 'all' ? dateFiltered : dateFiltered.filter(r => r.assigned_driver_name === driverFilter);
+    const dateFiltered = driverFilter === 'all' ? dateRides : dateRides.filter(r => r.assigned_driver_name === driverFilter);
+
+    // Double-booking detection for today
+    const todayActive = dateRides.filter(r => r.assigned_driver_id && r.pickup_time && !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status));
+    const driverConflicts = new Set();
+    const driverMap = {};
+    todayActive.forEach(r => {
+      const k = r.assigned_driver_id;
+      if (!driverMap[k]) driverMap[k] = [];
+      driverMap[k].push(r);
+    });
+    Object.values(driverMap).forEach(group => {
+      for (let i = 0; i < group.length; i++) {
+        for (let j = i + 1; j < group.length; j++) {
+          const [h1] = (group[i].pickup_time || '').split(':').map(Number);
+          const [h2] = (group[j].pickup_time || '').split(':').map(Number);
+          if (!isNaN(h1) && !isNaN(h2) && Math.abs(h1 * 60 - h2 * 60) < 60) {
+            driverConflicts.add(group[i].assigned_driver_name);
+          }
+        }
+      }
+    });
 
     return {
-      todayRides, dateRides: driverFiltered, pending, approved, assigned, inProgress, completed,
-      noShows, cancelled, highPriority, totalCost, activeRecurring, activeDrivers,
+      dateRides: dateFiltered, pending, approved, inProgress, completed,
+      noShows, highPriority, totalCost, activeRecurring, activeDrivers,
       onDutyDrivers, availableVehicles, outOfServiceVehicles,
-      requestedToday: dateRides.filter(r => ['requested', 'pending'].includes(r.status)),
+      driverConflicts: [...driverConflicts],
       assignedToday: dateRides.filter(r => ['driver_assigned', 'scheduled', 'assigned', 'en_route', 'rider_picked_up'].includes(r.status)),
-      unassignedToday: dateRides.filter(r => ['approved', 'requested', 'pending'].includes(r.status)),
+      unassignedToday: dateRides.filter(r => !r.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied'].includes(r.status)),
       completedToday: dateRides.filter(r => r.status === 'completed'),
       cancelledToday: dateRides.filter(r => r.status === 'cancelled'),
       noShowToday: dateRides.filter(r => r.status === 'no_show'),
@@ -173,42 +194,42 @@ export default function DispatchDashboard() {
         </div>
       </div>
 
-      {/* AI Alerts */}
-      <AlertBanner rides={allRequests} drivers={drivers} vehicles={vehicles} />
+      {/* Operational Alerts */}
+      <AlertBanner rides={allRequests} drivers={drivers} vehicles={vehicles} driverConflicts={stats.driverConflicts} />
 
-      {/* Top KPI Grid */}
+      {/* Today's KPI Grid */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Operations — {dateFilter}</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Day Snapshot — {dateFilter}</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="Requested" value={stats.dateRides.length} icon={Clock} color="blue" />
-          <StatCard label="Assigned" value={stats.assignedToday.length} icon={Truck} color="purple" />
-          <StatCard label="Unassigned" value={stats.unassignedToday.length} icon={AlertTriangle} color="amber" onClick={() => navigate('/requests')} />
-          <StatCard label="Completed" value={stats.completedToday.length} icon={CheckCircle2} color="emerald" />
-          <StatCard label="No-Shows" value={stats.noShowToday.length} icon={XCircle} color="red" />
+          <StatCard label="Total Rides" value={stats.dateRides.length} icon={Clock} color="blue" subtext={dateFilter} />
+          <StatCard label="Dispatched" value={stats.assignedToday.length} icon={Truck} color="purple" onClick={() => navigate('/dispatch-board')} />
+          <StatCard label="Needs Assignment" value={stats.unassignedToday.length} icon={AlertTriangle} color="amber" onClick={() => navigate('/dispatch-board')} />
+          <StatCard label="Completed" value={stats.completedToday.length} icon={CheckCircle2} color="emerald" onClick={() => navigate('/requests')} />
+          <StatCard label="No-Shows" value={stats.noShowToday.length} icon={XCircle} color="red" onClick={() => navigate('/incidents')} />
           <StatCard label="Cancelled" value={stats.cancelledToday.length} icon={XCircle} color="slate" />
         </div>
       </div>
 
-      {/* Fleet & Operations KPIs */}
+      {/* Fleet & Workforce */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Fleet & Personnel</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Fleet & Workforce</p>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          <StatCard label="Drivers Active" value={stats.activeDrivers.length} icon={Users} color="emerald" subtext="total active" />
-          <StatCard label="On Duty / Available" value={stats.onDutyDrivers.length} icon={Activity} color="blue" />
-          <StatCard label="Vehicles Available" value={stats.availableVehicles.length} icon={Car} color="emerald" />
-          <StatCard label="Out of Service" value={stats.outOfServiceVehicles.length} icon={AlertCircle} color="red" />
-          <StatCard label="Recurring Plans" value={stats.activeRecurring.length} icon={RefreshCw} color="cyan" subtext="active" />
+          <StatCard label="Active Drivers" value={stats.activeDrivers.length} icon={Users} color="emerald" onClick={() => navigate('/drivers')} />
+          <StatCard label="Available Now" value={stats.onDutyDrivers.length} icon={Activity} color="blue" onClick={() => navigate('/drivers')} />
+          <StatCard label="Vehicles Ready" value={stats.availableVehicles.length} icon={Car} color="emerald" onClick={() => navigate('/vehicles')} />
+          <StatCard label="Out of Service" value={stats.outOfServiceVehicles.length} icon={AlertCircle} color="red" onClick={() => navigate('/vehicles')} />
+          <StatCard label="Recurring Plans" value={stats.activeRecurring.length} icon={RefreshCw} color="cyan" subtext="active" onClick={() => navigate('/recurring')} />
         </div>
       </div>
 
-      {/* All-time KPIs */}
+      {/* Program-level Metrics */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">All-Time Metrics</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Program Metrics</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Pending Review" value={stats.pending.length} icon={Eye} color="amber" onClick={() => navigate('/requests')} />
-          <StatCard label="High Priority" value={stats.highPriority.length} icon={Zap} color="red" onClick={() => navigate('/requests')} />
-          <StatCard label="Total Completed" value={stats.completed.length} icon={TrendingUp} color="emerald" />
-          <StatCard label="Total Cost" value={`$${stats.totalCost.toLocaleString()}`} icon={DollarSign} color="emerald" subtext="completed rides" />
+          <StatCard label="Needs Review" value={stats.pending.length} icon={Eye} color="amber" onClick={() => navigate('/requests')} />
+          <StatCard label="High / Urgent" value={stats.highPriority.length} icon={Zap} color="red" onClick={() => navigate('/requests')} subtext="open rides" />
+          <StatCard label="Total Completed" value={stats.completed.length} icon={TrendingUp} color="emerald" onClick={() => navigate('/reports')} />
+          <StatCard label="Total Program Cost" value={`$${stats.totalCost.toLocaleString()}`} icon={DollarSign} color="emerald" subtext="completed rides" onClick={() => navigate('/costs')} />
         </div>
       </div>
 

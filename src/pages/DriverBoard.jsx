@@ -44,7 +44,7 @@ const PRIORITY_BORDER = {
   standard: 'border-l-primary/30',
 };
 
-function RideCard({ ride, onAction, isNext }) {
+function RideCard({ ride, onAction, isNext, participant }) {
   const [open, setOpen] = useState(isNext);
   const [notes, setNotes] = useState(ride.driver_notes || '');
   const [showNotes, setShowNotes] = useState(false);
@@ -140,6 +140,18 @@ function RideCard({ ride, onAction, isNext }) {
           {/* Info row */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div><span className="text-muted-foreground">Purpose: </span><span className="font-medium capitalize">{ride.purpose?.replace(/_/g, ' ')}</span></div>
+            {participant?.phone && (
+              <div>
+                <a href={`tel:${participant.phone}`} className="flex items-center gap-1 text-primary hover:underline font-medium">
+                  <Phone className="w-3 h-3" />{participant.phone}
+                </a>
+              </div>
+            )}
+            {participant?.mobility_needs && (
+              <div className="col-span-2 p-1.5 bg-blue-50 dark:bg-blue-950/30 rounded text-blue-700 dark:text-blue-400">
+                <span className="font-bold">Mobility: </span>{participant.mobility_needs}
+              </div>
+            )}
             {ride.driver_notes && <div className="col-span-2"><span className="text-muted-foreground">Notes: </span><span className="font-medium">{ride.driver_notes}</span></div>}
           </div>
 
@@ -200,9 +212,12 @@ export default function DriverBoard() {
     if (!driverProfile) return { today: [], tomorrow: [] };
     const name = `${driverProfile.first_name} ${driverProfile.last_name}`;
     const sort = (a, b) => (a.pickup_time || '99:99').localeCompare(b.pickup_time || '99:99');
-    const todayRides = allRides.filter(r => r.request_date === today && (r.assigned_driver_name === name || r.assigned_driver_id === driverProfile.id)).sort(sort);
-    const tomorrowRides = allRides.filter(r => r.request_date === tomorrow && (r.assigned_driver_name === name || r.assigned_driver_id === driverProfile.id)).sort(sort);
-    return { today: todayRides, tomorrow: tomorrowRides };
+    const match = r => r.assigned_driver_name === name || r.assigned_driver_id === driverProfile.id;
+    const todayRides = allRides.filter(r => r.request_date === today && match(r)).sort(sort);
+    const tomorrowRides = allRides.filter(r => r.request_date === tomorrow && match(r)).sort(sort);
+    // week lookahead for awareness
+    const weekRides = allRides.filter(r => r.request_date > tomorrow && r.request_date <= format(addDays(new Date(), 7), 'yyyy-MM-dd') && match(r)).sort(sort);
+    return { today: todayRides, tomorrow: tomorrowRides, week: weekRides };
   }, [allRides, driverProfile, today, tomorrow]);
 
   const handleAction = async (ride, newStatus, notes) => {
@@ -218,12 +233,9 @@ export default function DriverBoard() {
   const displayRides = activeDay === 'today' ? myRides.today : myRides.tomorrow;
   const pendingRides = displayRides.filter(r => !['completed', 'cancelled', 'no_show'].includes(r.status));
   const completedRides = displayRides.filter(r => r.status === 'completed');
-  const nextRide = pendingRides[0] || null;
+  const nextRide = pendingRides.find(r => ['driver_assigned', 'scheduled', 'approved', 'en_route'].includes(r.status)) || pendingRides[0] || null;
 
-  const getParticipantPhone = (name) => {
-    const p = participants.find(p => `${p.first_name} ${p.last_name}` === name);
-    return p?.phone || null;
-  };
+  const getParticipant = (name) => participants.find(p => `${p.first_name} ${p.last_name}` === name) || null;
 
   if (!driverProfile) {
     return (
@@ -287,12 +299,14 @@ export default function DriverBoard() {
             <p className="text-xs font-bold uppercase tracking-wide opacity-70">Next Pickup</p>
             <p className="text-lg font-bold">{nextRide.participant_name}</p>
             <p className="text-sm opacity-80">{nextRide.pickup_time} · {nextRide.pickup_location}</p>
-            {getParticipantPhone(nextRide.participant_name) && (
-              <a href={`tel:${getParticipantPhone(nextRide.participant_name)}`}
-                className="inline-flex items-center gap-1.5 mt-2 text-sm opacity-90 hover:opacity-100">
-                <Phone className="w-3.5 h-3.5" /> {getParticipantPhone(nextRide.participant_name)}
+            {(() => { const p = getParticipant(nextRide.participant_name); return p?.phone ? (
+              <a href={`tel:${p.phone}`} className="inline-flex items-center gap-1.5 mt-2 text-sm opacity-90 hover:opacity-100">
+                <Phone className="w-3.5 h-3.5" /> {p.phone}
               </a>
-            )}
+            ) : null; })()}
+            {(() => { const p = getParticipant(nextRide.participant_name); return p?.mobility_needs ? (
+              <p className="text-xs opacity-80 mt-1 bg-white/20 rounded px-2 py-0.5">♿ {p.mobility_needs}</p>
+            ) : null; })()}
           </div>
           <div className="text-right">
             <p className="text-xs opacity-70">Status</p>
@@ -302,12 +316,17 @@ export default function DriverBoard() {
       )}
 
       {/* Day Switcher */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {[['today', 'Today', myRides.today.length], ['tomorrow', 'Tomorrow', myRides.tomorrow.length]].map(([v, l, c]) => (
           <Button key={v} variant={activeDay === v ? 'default' : 'outline'} size="sm" onClick={() => setActiveDay(v)} className="gap-2">
             <Calendar className="w-4 h-4" />{l} ({c})
           </Button>
         ))}
+        {myRides.week?.length > 0 && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground ml-2 px-2 py-1 bg-muted/40 rounded-md">
+            <Info className="w-3.5 h-3.5" />+{myRides.week.length} rides next 7 days
+          </span>
+        )}
       </div>
 
       {/* Shift Info */}
@@ -348,7 +367,8 @@ export default function DriverBoard() {
               <div className="space-y-2">
                 {group.rides.map(ride => (
                   <RideCard key={ride.id} ride={ride} onAction={handleAction}
-                    isNext={nextRide?.id === ride.id && activeDay === 'today'} />
+                    isNext={nextRide?.id === ride.id && activeDay === 'today'}
+                    participant={getParticipant(ride.participant_name)} />
                 ))}
               </div>
             </div>
