@@ -64,7 +64,11 @@ function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
   const conflictWarning = selectedDriver && selectedDriver !== ride.assigned_driver_id && wouldConflict?.(selectedDriver, ride.id, ride.request_date, ride.pickup_time);
 
   const sc = STATUS_CONFIG[ride.status] || STATUS_CONFIG.requested;
-  const isUnassigned = !ride.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied'].includes(ride.status);
+  const terminal = ['completed', 'cancelled', 'no_show', 'denied'];
+  const isUnassigned = !ride.assigned_driver_name && !terminal.includes(ride.status);
+  const missingVehicle = !ride.assigned_vehicle_name && !terminal.includes(ride.status);
+  const missingTime = !ride.pickup_time && !terminal.includes(ride.status);
+  const incompleteCount = [isUnassigned, missingVehicle, missingTime].filter(Boolean).length;
   const isActive = ['en_route', 'rider_picked_up', 'in_progress'].includes(ride.status);
 
   const handleAssign = async () => {
@@ -91,8 +95,10 @@ function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
                 <RotateCcw className="w-2.5 h-2.5" /> RT
               </span>
             )}
-            {isUnassigned && (
-              <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-bold">UNASSIGNED</span>
+            {incompleteCount > 0 && (
+              <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-bold">
+                {incompleteCount} MISSING
+              </span>
             )}
             {isActive && (
               <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-200 text-yellow-800 font-bold animate-pulse">LIVE</span>
@@ -132,6 +138,18 @@ function RideBlock({ ride, onAssign, drivers, vehicles, wouldConflict }) {
             <div className="flex items-start gap-1.5 p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200/50 text-xs">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
               <span className="text-amber-700 dark:text-amber-400">{ride.special_instructions}</span>
+            </div>
+          )}
+
+          {/* Incomplete checklist */}
+          {incompleteCount > 0 && (
+            <div className="flex flex-wrap gap-1.5 p-2 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200/50">
+              <span className="text-xs font-semibold text-red-600 w-full flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> Required before dispatch:
+              </span>
+              {isUnassigned && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">No driver</span>}
+              {missingVehicle && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">No vehicle</span>}
+              {missingTime && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">No pickup time</span>}
             </div>
           )}
 
@@ -269,15 +287,21 @@ export default function DispatchBoard() {
     const ride = allRequests.find(r => r.id === rideId);
     const update = {};
     if (driver) {
-      // Warn but still allow — dispatcher makes final call
       update.assigned_driver_id = driver.id;
       update.assigned_driver_name = `${driver.first_name} ${driver.last_name}`;
     }
     if (vehicleId === '') { update.assigned_vehicle_id = ''; update.assigned_vehicle_name = ''; }
     else if (vehicle) { update.assigned_vehicle_id = vehicle.id; update.assigned_vehicle_name = vehicle.nickname || `${vehicle.make} ${vehicle.model}`; }
     if (Object.keys(update).length > 0) {
-      if (!['completed', 'cancelled', 'no_show', 'denied', 'en_route', 'rider_picked_up'].includes(ride?.status)) {
-        update.status = 'driver_assigned';
+      const liveStatuses = ['en_route', 'rider_picked_up', 'dropped_off', 'return_pending', 'completed', 'cancelled', 'no_show', 'denied'];
+      if (!liveStatuses.includes(ride?.status)) {
+        // Only advance to driver_assigned when BOTH driver and vehicle are set
+        const finalDriver = update.assigned_driver_name || ride?.assigned_driver_name;
+        const finalVehicle = update.assigned_vehicle_name || (vehicleId === '' ? '' : ride?.assigned_vehicle_name);
+        if (finalDriver && finalVehicle) {
+          update.status = 'driver_assigned';
+        }
+        // else leave status as-is — still incomplete
       }
       await updateMutation.mutateAsync({ id: rideId, data: update });
     }
@@ -469,6 +493,10 @@ export default function DispatchBoard() {
                 {!collapsed && (
                   <div className="p-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                     {rides.sort((a, b) => {
+                      const terminal = ['completed', 'cancelled', 'no_show', 'denied'];
+                      const aMissing = !terminal.includes(a.status) && (!a.assigned_driver_name || !a.assigned_vehicle_name || !a.pickup_time) ? 0 : 1;
+                      const bMissing = !terminal.includes(b.status) && (!b.assigned_driver_name || !b.assigned_vehicle_name || !b.pickup_time) ? 0 : 1;
+                      if (aMissing !== bMissing) return aMissing - bMissing;
                       const pOrder = { urgent: 0, high: 1, standard: 2 };
                       const pDiff = (pOrder[a.priority] ?? 2) - (pOrder[b.priority] ?? 2);
                       if (pDiff !== 0) return pDiff;

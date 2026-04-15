@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ArrowLeft, Edit, CheckCircle2, XCircle, Truck, User, 
-  MapPin, Clock, DollarSign, MessageSquare, AlertTriangle, Car
+  MapPin, Clock, DollarSign, MessageSquare, AlertTriangle, Car, Circle
 } from 'lucide-react';
 
 const statusColors = {
@@ -89,6 +89,14 @@ export default function RequestDetail({ request, onBack }) {
 
   const activeDrivers = drivers.filter(d => d.status === 'active');
   const activeVehicles = vehicles.filter(v => v.service_status === 'available' || v.service_status === 'in_use');
+
+  // Readiness checklist — must pass before ride can be dispatched
+  const readinessChecks = [
+    { key: 'driver', label: 'Driver assigned', ok: !!request.assigned_driver_name },
+    { key: 'vehicle', label: 'Vehicle assigned', ok: !!request.assigned_vehicle_name },
+    { key: 'time', label: 'Pickup time confirmed', ok: !!request.pickup_time },
+  ];
+  const isDispatchReady = readinessChecks.every(c => c.ok);
 
   return (
     <div className="space-y-5">
@@ -285,6 +293,24 @@ export default function RequestDetail({ request, onBack }) {
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Status Actions</CardTitle></CardHeader>
             <CardContent className="space-y-2">
+
+              {/* Dispatch Readiness Checklist */}
+              {!['completed', 'cancelled', 'denied', 'no_show'].includes(request.status) && (
+                <div className={`p-2.5 rounded-lg border text-xs space-y-1.5 mb-1 ${isDispatchReady ? 'bg-emerald-500/5 border-emerald-400/30' : 'bg-amber-500/5 border-amber-400/30'}`}>
+                  <p className={`font-semibold uppercase tracking-wide ${isDispatchReady ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                    {isDispatchReady ? '✓ Ready to Dispatch' : 'Dispatch Checklist'}
+                  </p>
+                  {readinessChecks.map(c => (
+                    <div key={c.key} className="flex items-center gap-2">
+                      {c.ok
+                        ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        : <Circle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
+                      <span className={c.ok ? 'text-muted-foreground line-through' : 'text-red-600 font-medium'}>{c.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {['requested', 'pending', 'under_review'].includes(request.status) && (
                 <>
                   <Button size="sm" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => updateStatus('approved')}>
@@ -300,15 +326,39 @@ export default function RequestDetail({ request, onBack }) {
               )}
 
               {request.status === 'approved' && (
-                <Button size="sm" className="w-full" onClick={() => updateStatus('scheduled')}>
-                  Mark as Scheduled
-                </Button>
+                <div className="space-y-1.5">
+                  <Button
+                    size="sm" className="w-full"
+                    disabled={!isDispatchReady}
+                    onClick={() => updateStatus('scheduled')}
+                    title={!isDispatchReady ? 'Complete the dispatch checklist first' : ''}
+                  >
+                    Mark as Scheduled
+                  </Button>
+                  {!isDispatchReady && (
+                    <p className="text-xs text-amber-600 text-center">
+                      Assign driver, vehicle & time first
+                    </p>
+                  )}
+                </div>
               )}
 
               {['driver_assigned', 'scheduled'].includes(request.status) && (
-                <Button size="sm" className="w-full" onClick={() => updateStatus('en_route')}>
-                  Driver En Route
-                </Button>
+                <div className="space-y-1.5">
+                  <Button
+                    size="sm" className="w-full"
+                    disabled={!isDispatchReady}
+                    onClick={() => updateStatus('en_route')}
+                    title={!isDispatchReady ? 'Complete the dispatch checklist first' : ''}
+                  >
+                    Driver En Route
+                  </Button>
+                  {!isDispatchReady && (
+                    <p className="text-xs text-amber-600 text-center">
+                      Assign driver, vehicle & time first
+                    </p>
+                  )}
+                </div>
               )}
 
               {request.status === 'en_route' && (

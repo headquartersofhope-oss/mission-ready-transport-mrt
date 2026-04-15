@@ -12,6 +12,7 @@ import {
   Activity, Zap, TrendingUp, Eye, Filter
 } from 'lucide-react';
 import RideTable from '../components/dispatch/RideTable';
+import UnassignedQueue from '../components/dispatch/UnassignedQueue';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -45,7 +46,14 @@ function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
   const alerts = [];
   const today = new Date().toISOString().split('T')[0];
   const urgentRides = rides.filter(r => r.priority === 'urgent' && !['completed', 'cancelled', 'no_show'].includes(r.status));
-  const unassignedActive = rides.filter(r => r.request_date >= today && !r.assigned_driver_name && !['completed', 'cancelled', 'no_show', 'denied', 'requested', 'pending'].includes(r.status));
+  const unassignedActive = rides.filter(r => {
+    const terminal = ['completed', 'cancelled', 'no_show', 'denied'];
+    if (terminal.includes(r.status)) return false;
+    const missingDriver = !r.assigned_driver_name;
+    const missingVehicle = !r.assigned_vehicle_name;
+    const missingTime = !r.pickup_time;
+    return r.request_date >= today && (missingDriver || missingVehicle || missingTime);
+  });
   const expiredLicenses = drivers.filter(d => d.license_status === 'expired');
   const expiringLicenses = drivers.filter(d => d.license_status === 'expiring_soon');
   const maintenanceOverdue = vehicles.filter(v => v.maintenance_due_date && new Date(v.maintenance_due_date) < new Date());
@@ -53,7 +61,16 @@ function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
 
   if (driverConflicts.length) alerts.push({ text: `Double-booking detected for: ${driverConflicts.join(', ')}`, color: 'red' });
   if (urgentRides.length) alerts.push({ text: `${urgentRides.length} urgent ride${urgentRides.length > 1 ? 's' : ''} need immediate attention`, color: 'red' });
-  if (unassignedActive.length) alerts.push({ text: `${unassignedActive.length} approved/scheduled ride${unassignedActive.length > 1 ? 's' : ''} not yet assigned to a driver`, color: 'amber' });
+  if (unassignedActive.length) {
+    const noDriver = unassignedActive.filter(r => !r.assigned_driver_name).length;
+    const noVehicle = unassignedActive.filter(r => !r.assigned_vehicle_name).length;
+    const noTime = unassignedActive.filter(r => !r.pickup_time).length;
+    const parts = [];
+    if (noDriver) parts.push(`${noDriver} missing driver`);
+    if (noVehicle) parts.push(`${noVehicle} missing vehicle`);
+    if (noTime) parts.push(`${noTime} missing pickup time`);
+    alerts.push({ text: `${unassignedActive.length} incomplete ride${unassignedActive.length > 1 ? 's' : ''}: ${parts.join(' · ')} — dispatcher action required`, color: 'amber' });
+  }
   if (expiredLicenses.length) alerts.push({ text: `${expiredLicenses.map(d => `${d.first_name} ${d.last_name}`).join(', ')} — license EXPIRED, cannot dispatch`, color: 'red' });
   if (expiringLicenses.length) alerts.push({ text: `${expiringLicenses.length} driver license${expiringLicenses.length > 1 ? 's' : ''} expiring soon — renew before dispatch`, color: 'amber' });
   if (maintenanceOverdue.length) alerts.push({ text: `${maintenanceOverdue.map(v => v.nickname || v.plate).join(', ')} — maintenance overdue`, color: 'amber' });
@@ -196,6 +213,12 @@ export default function DispatchDashboard() {
 
       {/* Operational Alerts */}
       <AlertBanner rides={allRequests} drivers={drivers} vehicles={vehicles} driverConflicts={stats.driverConflicts} />
+
+      {/* Unassigned Ride Queue — always visible when rides need action */}
+      <UnassignedQueue
+        rides={allRequests.filter(r => r.request_date >= today)}
+        onRideClick={handleRowClick}
+      />
 
       {/* Today's KPI Grid */}
       <div>
