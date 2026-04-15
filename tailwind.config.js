@@ -4,6 +4,9 @@ module.exports = {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+  		fontFamily: {
+  			inter: ['var(--font-inter)']
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -85,5 +88,15 @@ module.exports = {
   		}
   	}
   },
+  safelist: [
+    'bg-amber-500/10', 'text-amber-600', 'border-amber-500/20',
+    'bg-emerald-500/10', 'text-emerald-600', 'border-emerald-500/20',
+    'bg-red-500/10', 'text-red-600', 'border-red-500/20',
+    'bg-blue-500/10', 'text-blue-600', 'border-blue-500/20',
+    'bg-purple-500/10', 'text-purple-600', 'border-purple-500/20',
+    'bg-slate-500/10', 'text-slate-600', 'border-slate-500/20',
+    'bg-orange-500/10', 'text-orange-600', 'border-orange-500/20',
+    'bg-cyan-500/10', 'text-cyan-600', 'border-cyan-500/20',
+  ],
   plugins: [require("tailwindcss-animate")],
 }

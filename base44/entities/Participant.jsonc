@@ -1,0 +1,73 @@
+{
+  "name": "Participant",
+  "type": "object",
+  "properties": {
+    "participant_id": {
+      "type": "string",
+      "description": "Unique participant identifier"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "pickup_address": {
+      "type": "string"
+    },
+    "pickup_notes": {
+      "type": "string",
+      "description": "Special pickup instructions"
+    },
+    "transportation_restrictions": {
+      "type": "string",
+      "description": "Any restrictions on transport modes"
+    },
+    "approved_service_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Categories: employment, housing, health, benefits, legal, recovery, training, other"
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "case_manager": {
+      "type": "string",
+      "description": "Name or email of assigned case manager"
+    },
+    "linked_house": {
+      "type": "string",
+      "description": "Linked housing program or house name"
+    },
+    "linked_employer": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name"
+  ]
+}

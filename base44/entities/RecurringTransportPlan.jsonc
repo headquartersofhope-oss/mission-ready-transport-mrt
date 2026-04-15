@@ -1,0 +1,110 @@
+{
+  "name": "RecurringTransportPlan",
+  "type": "object",
+  "properties": {
+    "participant_id": {
+      "type": "string"
+    },
+    "participant_name": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "employment",
+        "treatment",
+        "court",
+        "training",
+        "appointments",
+        "other"
+      ]
+    },
+    "pickup_location": {
+      "type": "string"
+    },
+    "dropoff_location": {
+      "type": "string"
+    },
+    "pickup_time": {
+      "type": "string"
+    },
+    "return_trip": {
+      "type": "boolean",
+      "default": false
+    },
+    "return_pickup_time": {
+      "type": "string"
+    },
+    "weekday_pattern": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Days: monday, tuesday, wednesday, thursday, friday, saturday, sunday"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "review_cycle": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "quarterly"
+      ],
+      "default": "monthly"
+    },
+    "next_review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied",
+        "expired",
+        "under_review"
+      ],
+      "default": "pending"
+    },
+    "funding_source": {
+      "type": "string"
+    },
+    "estimated_cost_per_ride": {
+      "type": "number"
+    },
+    "assigned_provider_id": {
+      "type": "string"
+    },
+    "assigned_provider_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "participant_name",
+    "purpose",
+    "pickup_location",
+    "dropoff_location"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "transport_admin",
+        "dispatcher",
+        "case_manager",
+        "participant_user",
+        "reviewer"
+      ],
+      "default": "reviewer"
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "name": "TransportRequest",
+  "type": "object",
+  "properties": {
+    "participant_id": {
+      "type": "string",
+      "description": "ID of the participant record"
+    },
+    "participant_name": {
+      "type": "string"
+    },
+    "request_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "pickup_time": {
+      "type": "string",
+      "description": "Requested pickup time"
+    },
+    "pickup_location": {
+      "type": "string"
+    },
+    "dropoff_location": {
+      "type": "string"
+    },
+    "return_trip": {
+      "type": "boolean",
+      "default": false
+    },
+    "return_pickup_time": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "employment",
+        "housing",
+        "health",
+        "benefits",
+        "legal",
+        "recovery",
+        "training",
+        "court",
+        "other"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "high",
+        "urgent"
+      ],
+      "default": "standard"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied",
+        "assigned",
+        "in_progress",
+        "completed",
+        "no_show",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "assigned_provider_id": {
+      "type": "string"
+    },
+    "assigned_provider_name": {
+      "type": "string"
+    },
+    "denial_reason": {
+      "type": "string"
+    },
+    "special_instructions": {
+      "type": "string"
+    },
+    "estimated_cost": {
+      "type": "number"
+    },
+    "actual_cost": {
+      "type": "number"
+    },
+    "funding_source": {
+      "type": "string"
+    },
+    "participant_contribution": {
+      "type": "number",
+      "default": 0
+    },
+    "post_ride_notes": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "submitted_by": {
+      "type": "string",
+      "description": "Email of requester"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "recurring_plan_id": {
+      "type": "string",
+      "description": "Link to recurring plan if applicable"
+    }
+  },
+  "required": [
+    "participant_name",
+    "request_date",
+    "pickup_location",
+    "dropoff_location",
+    "purpose"
+  ]
+}

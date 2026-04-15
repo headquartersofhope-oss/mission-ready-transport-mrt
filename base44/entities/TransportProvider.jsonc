@@ -1,0 +1,75 @@
+{
+  "name": "TransportProvider",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "provider_type": {
+      "type": "string",
+      "enum": [
+        "bus_pass_vendor",
+        "volunteer_driver",
+        "rideshare_voucher",
+        "staff_driver",
+        "partner_org",
+        "reimbursement"
+      ],
+      "description": "Type of transportation provider"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "service_area": {
+      "type": "string",
+      "description": "Geographic area of coverage"
+    },
+    "cost_method": {
+      "type": "string",
+      "enum": [
+        "per_ride",
+        "per_mile",
+        "flat_rate",
+        "monthly_pass",
+        "voucher",
+        "volunteer_no_cost",
+        "reimbursement"
+      ],
+      "description": "How cost is calculated"
+    },
+    "base_cost": {
+      "type": "number",
+      "description": "Base cost per unit"
+    },
+    "availability": {
+      "type": "string",
+      "description": "Hours and days available"
+    },
+    "restrictions": {
+      "type": "string",
+      "description": "Any service restrictions"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "pending_approval"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "provider_type"
+  ]
+}
