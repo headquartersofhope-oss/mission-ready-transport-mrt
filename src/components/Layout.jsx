@@ -1,8 +1,8 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, FileText, Truck, RefreshCw, 
+  LayoutDashboard, Users, FileText, Truck, RefreshCw,
   DollarSign, BarChart3, Menu, X, LogOut, ChevronRight,
-  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain
+  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, Layers
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -12,9 +12,10 @@ const navSections = [
   {
     label: 'Operations',
     items: [
-      { path: '/', label: 'Dispatch', icon: LayoutDashboard },
+      { path: '/', label: 'Dispatch Overview', icon: LayoutDashboard },
+      { path: '/dispatch-board', label: 'Dispatch Board', icon: Truck },
       { path: '/requests', label: 'Ride Requests', icon: FileText },
-      { path: '/driver-portal', label: 'Driver Portal', icon: Navigation },
+      { path: '/driver-board', label: 'Driver Board', icon: Navigation },
     ]
   },
   {

@@ -117,12 +117,24 @@ export default function DriverDetail({ driver, onEdit, onBack }) {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Assignment</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Assignment & Schedule</CardTitle></CardHeader>
           <CardContent>
             <InfoRow label="Assigned Vehicle" value={driver.assigned_vehicle_name} />
             <InfoRow label="Shift Schedule" value={driver.shift_schedule} />
             <InfoRow label="Service Area" value={driver.service_area} />
-            <InfoRow label="Linked User Email" value={driver.linked_user_email} />
+            <InfoRow label="Territory / Zones" value={driver.territory_zones} />
+            {driver.active_days?.length > 0 && (
+              <div className="flex justify-between py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Active Days</span>
+                <div className="flex gap-1 flex-wrap justify-end max-w-[60%]">
+                  {driver.active_days.map(d => (
+                    <span key={d} className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium capitalize">{d.slice(0,3)}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <InfoRow label="Backup Role" value={driver.backup_driver_role?.replace(/_/g, ' ')} />
+            <InfoRow label="Portal Login Email" value={driver.linked_user_email} />
             <InfoRow label="Hire Date" value={driver.hire_date} />
           </CardContent>
         </Card>

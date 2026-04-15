@@ -1,21 +1,31 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, Save, Truck } from 'lucide-react';
+
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const defaultState = {
   driver_id: '', first_name: '', last_name: '', phone: '', email: '',
+  linked_user_email: '',
   license_number: '', license_expiry: '', license_status: 'valid',
   insurance_status: 'current', insurance_expiry: '',
   availability: 'available', shift_schedule: '',
-  assigned_vehicle_name: '', backup_vehicle_eligible: false,
-  service_area: '', languages: [], notes: '', status: 'active',
+  active_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+  assigned_vehicle_id: '', assigned_vehicle_name: '',
+  backup_vehicle_eligible: false,
+  backup_driver_role: 'none',
+  service_area: '', territory_zones: '',
+  languages: [], notes: '', admin_notes: '', status: 'active',
   emergency_contact_name: '', emergency_contact_phone: '',
-  hire_date: '', linked_user_email: '',
+  hire_date: '',
   total_rides_completed: 0, on_time_rate: 100, incident_count: 0, cancellation_count: 0
 };
 
@@ -23,7 +33,23 @@ export default function DriverForm({ existing, onSave, onCancel }) {
   const [form, setForm] = useState(existing || defaultState);
   const [saving, setSaving] = useState(false);
 
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles'],
+    queryFn: () => base44.entities.Vehicle.list('nickname', 100),
+  });
+
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const toggleDay = (day) => {
+    const days = form.active_days || [];
+    set('active_days', days.includes(day) ? days.filter(d => d !== day) : [...days, day]);
+  };
+
+  const handleVehicleSelect = (vehicleId) => {
+    const v = vehicles.find(v => v.id === vehicleId);
+    set('assigned_vehicle_id', vehicleId);
+    set('assigned_vehicle_name', v ? (v.nickname || `${v.make} ${v.model}`) : '');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,13 +64,15 @@ export default function DriverForm({ existing, onSave, onCancel }) {
         <Button variant="ghost" size="icon" onClick={onCancel}><ArrowLeft className="w-4 h-4" /></Button>
         <div>
           <h1 className="text-2xl font-bold">{existing ? 'Edit Driver' : 'Add Driver'}</h1>
-          <p className="text-sm text-muted-foreground">Driver profile and assignment details</p>
+          <p className="text-sm text-muted-foreground">Driver profile, dispatch configuration, and login setup</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Identity */}
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Basic Information</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Identity & Login</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Driver ID</Label>
@@ -67,8 +95,8 @@ export default function DriverForm({ existing, onSave, onCancel }) {
               <Input type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Linked User Email</Label>
-              <Input placeholder="For driver portal login" value={form.linked_user_email || ''} onChange={e => set('linked_user_email', e.target.value)} />
+              <Label className="text-xs">Portal Login (Linked User Email)</Label>
+              <Input placeholder="Links this driver to a login account" value={form.linked_user_email || ''} onChange={e => set('linked_user_email', e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Hire Date</Label>
@@ -86,7 +114,7 @@ export default function DriverForm({ existing, onSave, onCancel }) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Availability</Label>
+              <Label className="text-xs">Current Availability</Label>
               <Select value={form.availability || 'available'} onValueChange={v => set('availability', v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -101,6 +129,85 @@ export default function DriverForm({ existing, onSave, onCancel }) {
           </CardContent>
         </Card>
 
+        {/* Schedule & Territory */}
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Schedule, Territory & Vehicle</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Shift Schedule</Label>
+                <Input placeholder="e.g. Mon-Fri 6am-4pm" value={form.shift_schedule || ''} onChange={e => set('shift_schedule', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Service Area</Label>
+                <Input placeholder="e.g. Metro Area, Southside" value={form.service_area || ''} onChange={e => set('service_area', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Territory / Zones</Label>
+                <Input placeholder="e.g. Downtown, Eastside, Zone 3" value={form.territory_zones || ''} onChange={e => set('territory_zones', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Assigned Vehicle</Label>
+                <Select value={form.assigned_vehicle_id || ''} onValueChange={handleVehicleSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select vehicle…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>No vehicle assigned</SelectItem>
+                    {vehicles.filter(v => v.status === 'active').map(v => (
+                      <SelectItem key={v.id} value={v.id}>
+                        <span className="flex items-center gap-2">
+                          <Truck className="w-3.5 h-3.5" />
+                          {v.nickname || `${v.make} ${v.model}`} — {v.plate}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Active Days */}
+            <div className="space-y-2">
+              <Label className="text-xs">Active Days</Label>
+              <div className="flex flex-wrap gap-2">
+                {DAYS.map(day => (
+                  <button key={day} type="button"
+                    onClick={() => toggleDay(day)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors capitalize
+                      ${(form.active_days || []).includes(day)
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-transparent border-input text-muted-foreground hover:bg-muted'}`}>
+                    {day.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Backup Role */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Backup Driver Role</Label>
+                <Select value={form.backup_driver_role || 'none'} onValueChange={v => set('backup_driver_role', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Not a backup</SelectItem>
+                    <SelectItem value="primary_backup">Primary Backup</SelectItem>
+                    <SelectItem value="secondary_backup">Secondary Backup</SelectItem>
+                    <SelectItem value="on_call">On-Call</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-3 mt-5">
+                <Checkbox id="backup_vehicle" checked={!!form.backup_vehicle_eligible}
+                  onCheckedChange={v => set('backup_vehicle_eligible', v)} />
+                <Label htmlFor="backup_vehicle" className="text-sm cursor-pointer">Eligible for backup vehicle assignment</Label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* License */}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm">License & Compliance</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -143,26 +250,9 @@ export default function DriverForm({ existing, onSave, onCancel }) {
           </CardContent>
         </Card>
 
+        {/* Performance */}
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Assignment & Schedule</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Assigned Vehicle</Label>
-              <Input placeholder="e.g. Van 1 – Blue Ford" value={form.assigned_vehicle_name || ''} onChange={e => set('assigned_vehicle_name', e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Shift Schedule</Label>
-              <Input placeholder="e.g. Mon-Fri 6am-4pm" value={form.shift_schedule || ''} onChange={e => set('shift_schedule', e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Service Area</Label>
-              <Input placeholder="e.g. Metro Area" value={form.service_area || ''} onChange={e => set('service_area', e.target.value)} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Performance & History</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Performance Metrics</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Total Rides Completed</Label>
@@ -183,6 +273,7 @@ export default function DriverForm({ existing, onSave, onCancel }) {
           </CardContent>
         </Card>
 
+        {/* Emergency + Notes */}
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm">Emergency Contact & Notes</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,9 +285,13 @@ export default function DriverForm({ existing, onSave, onCancel }) {
               <Label className="text-xs">Emergency Contact Phone</Label>
               <Input value={form.emergency_contact_phone || ''} onChange={e => set('emergency_contact_phone', e.target.value)} />
             </div>
-            <div className="md:col-span-2 space-y-1.5">
-              <Label className="text-xs">Notes</Label>
-              <Textarea rows={3} value={form.notes || ''} onChange={e => set('notes', e.target.value)} />
+            <div className="space-y-1.5">
+              <Label className="text-xs">Driver Notes (visible to driver)</Label>
+              <Textarea rows={2} value={form.notes || ''} onChange={e => set('notes', e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Admin Notes (internal only)</Label>
+              <Textarea rows={2} placeholder="Internal admin notes — not shown to driver" value={form.admin_notes || ''} onChange={e => set('admin_notes', e.target.value)} />
             </div>
           </CardContent>
         </Card>

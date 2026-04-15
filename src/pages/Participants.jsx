@@ -7,8 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Phone, Mail, AlertTriangle, XCircle } from 'lucide-react';
+import { Plus, Search, Phone, Mail, AlertTriangle, Link2, XCircle } from 'lucide-react';
 import ParticipantForm from '../components/participants/ParticipantForm';
+import DriverAssignmentPanel from '../components/drivers/DriverAssignmentPanel';
 
 const statusColors = {
   active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
@@ -28,6 +29,7 @@ export default function Participants() {
   const queryClient = useQueryClient();
   const [view, setView] = useState('list');
   const [selected, setSelected] = useState(null);
+  const [assignmentTarget, setAssignmentTarget] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -63,7 +65,14 @@ export default function Participants() {
   };
 
   if (view === 'form') {
-    return <ParticipantForm existing={selected} onSave={handleSave} onCancel={() => { setView('list'); setSelected(null); }} />;
+    return (
+      <div className="space-y-5">
+        <ParticipantForm existing={selected} onSave={handleSave} onCancel={() => { setView('list'); setSelected(null); setAssignmentTarget(null); }} />
+        {selected && (
+          <DriverAssignmentPanel participant={selected} onClose={() => setAssignmentTarget(null)} />
+        )}
+      </div>
+    );
   }
 
   const activeCount = participants.filter(p => p.status === 'active').length;
@@ -120,15 +129,16 @@ export default function Participants() {
                     <TableHead className="text-xs">Case Manager</TableHead>
                     <TableHead className="text-xs">No-Shows</TableHead>
                     <TableHead className="text-xs">Reliability</TableHead>
+                    <TableHead className="text-xs">Pref. Driver</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
-                  </TableRow>
+                    </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map(p => (
                     <TableRow
                       key={p.id}
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => { setSelected(p); setView('form'); }}
+                      onClick={() => { setSelected(p); setView('form'); setAssignmentTarget(p); }}
                     >
                       <TableCell>
                         <div>
@@ -161,8 +171,13 @@ export default function Participants() {
                           {p.reliability_rating || 'good'}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                       {p.preferred_driver_name ? (
+                         <span className="flex items-center gap-1 text-primary font-medium"><Link2 className="w-3 h-3" />{p.preferred_driver_name}</span>
+                       ) : '—'}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-xs ${statusColors[p.status] || ''}`}>{p.status}</Badge>
+                       <Badge variant="outline" className={`text-xs ${statusColors[p.status] || ''}`}>{p.status}</Badge>
                       </TableCell>
                     </TableRow>
                   ))}

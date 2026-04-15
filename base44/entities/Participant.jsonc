@@ -49,6 +49,20 @@
         "type": "string"
       }
     },
+    "preferred_driver_id": {
+      "type": "string",
+      "description": "Preferred driver for outbound trips"
+    },
+    "preferred_driver_name": {
+      "type": "string"
+    },
+    "return_driver_id": {
+      "type": "string",
+      "description": "Override driver for return trips"
+    },
+    "return_driver_name": {
+      "type": "string"
+    },
     "emergency_contact_name": {
       "type": "string"
     },
