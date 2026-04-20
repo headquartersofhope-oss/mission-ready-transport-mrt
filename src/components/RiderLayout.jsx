@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LogOut, Navigation } from 'lucide-react';
+import AppAssistant from '@/components/ai/AppAssistant';
 
 export default function RiderLayout() {
   const navigate = useNavigate();
@@ -55,6 +56,9 @@ export default function RiderLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* AI Assistant */}
+      <AppAssistant />
     </div>
   );
 }
