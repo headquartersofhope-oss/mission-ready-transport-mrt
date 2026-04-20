@@ -7,82 +7,94 @@
 @layer base {
   :root {
     --font-inter: 'Inter', sans-serif;
-    --background: 0 0% 98.5%;
-    --foreground: 220 12% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 12% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 12% 12%;
-    --primary: 220 90% 54%;
+    --background: 200 20% 5%;
+    --foreground: 210 40% 96%;
+    --card: 200 12% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 200 12% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 217 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 95%;
-    --secondary-foreground: 220 12% 12%;
-    --muted: 220 12% 92%;
-    --muted-foreground: 220 8% 50%;
-    --accent: 38 92% 50%;
+    --secondary: 200 15% 15%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 210 10% 30%;
+    --muted-foreground: 210 14% 55%;
+    --accent: 217 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 91%;
-    --input: 220 14% 91%;
-    --ring: 220 90% 54%;
-    --chart-1: 220 90% 54%;
+    --border: 200 15% 18%;
+    --input: 200 12% 12%;
+    --ring: 217 100% 50%;
+    --chart-1: 217 100% 50%;
     --chart-2: 160 84% 39%;
     --chart-3: 38 92% 50%;
     --chart-4: 280 85% 44%;
     --chart-5: 0 84% 60%;
     --radius: 0.875rem;
-    --sidebar-background: 220 18% 9%;
+    --sidebar-background: 200 20% 3%;
     --sidebar-foreground: 210 40% 94%;
-    --sidebar-primary: 220 90% 56%;
+    --sidebar-primary: 217 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent: 217 100% 50%;
     --sidebar-accent-foreground: 210 40% 94%;
-    --sidebar-border: 220 20% 15%;
-    --sidebar-ring: 220 90% 56%;
-    --success: 160 84% 39%;
+    --sidebar-border: 200 15% 18%;
+    --sidebar-ring: 217 100% 50%;
+    --success: 160 84% 48%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 220 12% 12%;
+    --warning-foreground: 0 0% 12%;
+    --status-confirmed: 160 84% 48%;
+    --status-pending: 45 93% 62%;
+    --status-en-route: 217 100% 62%;
+    --status-completed: 210 14% 55%;
+    --status-cancelled: 0 84% 60%;
+    --status-assigned: 280 85% 56%;
   }
 
   .dark {
-    --background: 220 15% 6%;
+    --background: 200 20% 5%;
     --foreground: 210 40% 96%;
-    --card: 220 16% 11%;
+    --card: 200 12% 9%;
     --card-foreground: 210 40% 96%;
-    --popover: 220 16% 11%;
+    --popover: 200 12% 9%;
     --popover-foreground: 210 40% 96%;
-    --primary: 220 90% 58%;
-    --primary-foreground: 220 12% 12%;
-    --secondary: 220 16% 18%;
+    --primary: 217 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 15% 15%;
     --secondary-foreground: 210 40% 96%;
-    --muted: 220 14% 24%;
-    --muted-foreground: 220 10% 62%;
-    --accent: 38 92% 50%;
-    --accent-foreground: 220 12% 12%;
+    --muted: 210 10% 30%;
+    --muted-foreground: 210 14% 55%;
+    --accent: 217 100% 50%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 16% 18%;
-    --input: 220 16% 18%;
-    --ring: 220 90% 58%;
-    --chart-1: 220 90% 58%;
+    --border: 200 15% 18%;
+    --input: 200 12% 12%;
+    --ring: 217 100% 50%;
+    --chart-1: 217 100% 50%;
     --chart-2: 160 84% 45%;
     --chart-3: 220 90% 52%;
     --chart-4: 280 85% 48%;
     --chart-5: 0 84% 60%;
-    --sidebar-background: 220 15% 6%;
+    --sidebar-background: 200 20% 3%;
     --sidebar-foreground: 210 40% 94%;
-    --sidebar-primary: 220 90% 56%;
+    --sidebar-primary: 217 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 18% 18%;
+    --sidebar-accent: 217 100% 50%;
     --sidebar-accent-foreground: 210 40% 94%;
-    --sidebar-border: 220 16% 16%;
-    --sidebar-ring: 220 90% 56%;
-    --success: 160 84% 45%;
+    --sidebar-border: 200 15% 18%;
+    --sidebar-ring: 217 100% 50%;
+    --success: 160 84% 48%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 220 12% 12%;
+    --warning-foreground: 0 0% 12%;
+    --status-confirmed: 160 84% 48%;
+    --status-pending: 45 93% 62%;
+    --status-en-route: 217 100% 62%;
+    --status-completed: 210 14% 55%;
+    --status-cancelled: 0 84% 60%;
+    --status-assigned: 280 85% 56%;
   }
 }
 
@@ -112,11 +124,11 @@
 
 @layer components {
   .premium-card {
-    @apply rounded-lg bg-card text-card-foreground shadow-sm border border-border/50 hover:shadow-md transition-shadow duration-200;
+    @apply rounded-lg bg-card text-card-foreground shadow-sm border border-border hover:shadow-xl hover:shadow-primary/20 transition-all duration-200;
   }
 
   .premium-button {
-    @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg font-medium text-sm transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg font-medium text-sm transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card active:scale-95;
   }
 
   .premium-badge {
@@ -124,6 +136,42 @@
   }
 
   .premium-input {
-    @apply rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all;
+    @apply rounded-lg border border-border bg-input px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card transition-all;
+  }
+
+  .stat-card {
+    @apply relative overflow-hidden rounded-lg bg-card border border-border p-6 transition-all duration-200 hover:shadow-xl hover:shadow-primary/20;
+  }
+
+  .stat-card-top-border {
+    @apply before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r;
+  }
+
+  .stat-number {
+    @apply text-5xl font-bold text-white;
+  }
+
+  .stat-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+
+  .status-left-border {
+    @apply relative border-l-4;
+  }
+
+  .glow-on-hover {
+    @apply hover:shadow-xl transition-shadow duration-200;
+  }
+
+  .air-traffic-control {
+    @apply bg-background text-foreground;
+  }
+
+  .board-column {
+    @apply rounded-lg border border-border bg-secondary/40 backdrop-blur-sm;
+  }
+
+  .board-card {
+    @apply rounded-lg bg-card border border-border/60 p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-200;
   }
 }

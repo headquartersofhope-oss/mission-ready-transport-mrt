@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import PremiumPageHeader from '../components/premium/PremiumPageHeader';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -65,19 +66,18 @@ export default function RecurringPlans() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Recurring Transport Plans</h1>
-          <p className="text-sm text-muted-foreground mt-1">{plans.length} plans configured</p>
-        </div>
-        <Button onClick={() => { setSelected(null); setView('form'); }} className="gap-2">
-          <Plus className="w-4 h-4" /> New Plan
+      <PremiumPageHeader 
+        title="Recurring Transport Plans" 
+        subtitle={`${plans.length} plans configured`}
+      >
+        <Button onClick={() => { setSelected(null); setView('form'); }} className="bg-primary">
+          <Plus className="w-4 h-4 mr-2" /> New Plan
         </Button>
-      </div>
+      </PremiumPageHeader>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search plans…" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+        <Input placeholder="Search plans…" className="pl-9 bg-input border-border" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       {isLoading ? (

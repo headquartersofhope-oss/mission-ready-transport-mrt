@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import PremiumPageHeader from '../components/premium/PremiumPageHeader';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -19,9 +20,9 @@ const typeLabels = {
 };
 
 const statusColors = {
-  active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  inactive: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
-  pending_approval: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  active: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+  inactive: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
+  pending_approval: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
 };
 
 export default function Providers() {
@@ -65,19 +66,18 @@ export default function Providers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Transport Providers</h1>
-          <p className="text-sm font-medium text-muted-foreground mt-2">{providers.length} providers registered</p>
-        </div>
-        <Button onClick={() => { setSelected(null); setView('form'); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Provider
+      <PremiumPageHeader 
+        title="Transport Providers" 
+        subtitle={`${providers.length} providers registered`}
+      >
+        <Button onClick={() => { setSelected(null); setView('form'); }} className="bg-primary">
+          <Plus className="w-4 h-4 mr-2" /> Add Provider
         </Button>
-      </div>
+      </PremiumPageHeader>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search providers…" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+        <Input placeholder="Search providers…" className="pl-9 bg-input border-border" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       {isLoading ? (

@@ -9,39 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Clock, CheckCircle2, AlertTriangle, Truck, XCircle, 
   RefreshCw, DollarSign, AlertCircle, Users, Car, 
-  Activity, Zap, TrendingUp, Eye, Filter
+  Activity, Zap, TrendingUp, Eye, Filter, TrendingDown
 } from 'lucide-react';
 import RideTable from '../components/dispatch/RideTable';
 import UnassignedQueue from '../components/dispatch/UnassignedQueue';
 import DispatchMap from '../components/dispatch/DispatchMap';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-
-function StatCard({ label, value, icon: Icon, color, subtext, onClick }) {
-  const colorMap = {
-    blue: 'bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
-    amber: 'bg-amber-500/12 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
-    emerald: 'bg-emerald-500/12 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
-    red: 'bg-red-500/12 text-red-600 dark:bg-red-500/20 dark:text-red-400',
-    purple: 'bg-purple-500/12 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400',
-    slate: 'bg-slate-500/12 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
-    cyan: 'bg-cyan-500/12 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400',
-  };
-  return (
-    <Card className={`p-6 shadow-sm hover:shadow-md transition-all duration-200 ${onClick ? 'cursor-pointer hover:border-primary/50' : ''}`} onClick={onClick}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold mt-3 tracking-tight">{value}</p>
-          {subtext && <p className="text-xs text-muted-foreground mt-2">{subtext}</p>}
-        </div>
-        <div className={`p-3 rounded-lg ml-3 shrink-0 ${colorMap[color] || colorMap.slate}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </Card>
-  );
-}
+import PremiumPageHeader from '../components/premium/PremiumPageHeader';
+import StatCard from '../components/premium/StatCard';
 
 function AlertBanner({ rides, drivers, vehicles, driverConflicts = [] }) {
   const alerts = [];
@@ -186,19 +162,17 @@ export default function DispatchDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-2">
-         <div>
-           <h1 className="text-4xl font-bold tracking-tight">Dispatch Operations</h1>
-           <p className="text-sm font-medium text-muted-foreground mt-2">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
-         </div>
+      <PremiumPageHeader 
+        title="Dispatch Operations" 
+        subtitle={format(new Date(), 'EEEE, MMMM d, yyyy')}
+      >
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <input
             type="date"
             value={dateFilter}
             onChange={e => setDateFilter(e.target.value)}
-            className="h-10 px-3 rounded-lg border border-input bg-card text-sm transition-colors hover:border-input/80 focus:border-primary"
+            className="h-10 px-3 rounded-lg border border-border bg-input text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
           />
           <Select value={driverFilter} onValueChange={setDriverFilter}>
             <SelectTrigger className="w-40 h-10">
@@ -210,7 +184,7 @@ export default function DispatchDashboard() {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </PremiumPageHeader>
 
       {/* Operational Alerts */}
       <AlertBanner rides={allRequests} drivers={drivers} vehicles={vehicles} driverConflicts={stats.driverConflicts} />

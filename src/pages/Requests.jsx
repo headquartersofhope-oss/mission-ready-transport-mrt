@@ -3,170 +3,169 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter } from 'lucide-react';
-import RideTable from '../components/dispatch/RideTable';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Plus, Search, Calendar, Clock, MapPin, User, Trash2, 
+  Edit, ChevronRight, AlertCircle
+} from 'lucide-react';
+import { format } from 'date-fns';
 import RequestForm from '../components/requests/RequestForm';
 import RequestDetail from '../components/requests/RequestDetail';
+import PremiumPageHeader from '../components/premium/PremiumPageHeader';
 
-const STATUS_GROUPS = {
-  all: null,
-  needs_action: ['requested', 'pending', 'under_review', 'approved'],
-  assigned: ['scheduled', 'driver_assigned', 'assigned'],
-  active: ['en_route', 'rider_picked_up', 'dropped_off', 'return_pending', 'in_progress'],
-  completed: ['completed'],
-  issues: ['no_show', 'incident_review', 'denied', 'cancelled'],
+const statusColors = {
+  requested: { bg: 'bg-slate-500/10', text: 'text-slate-300', border: 'border-slate-500/30' },
+  pending: { bg: 'bg-amber-500/10', text: 'text-amber-300', border: 'border-amber-500/30' },
+  approved: { bg: 'bg-sky-500/10', text: 'text-sky-300', border: 'border-sky-500/30' },
+  scheduled: { bg: 'bg-blue-500/10', text: 'text-blue-300', border: 'border-blue-500/30' },
+  driver_assigned: { bg: 'bg-purple-500/10', text: 'text-purple-300', border: 'border-purple-500/30' },
+  en_route: { bg: 'bg-sky-500/10', text: 'text-sky-300', border: 'border-sky-500/30' },
+  completed: { bg: 'bg-emerald-500/10', text: 'text-emerald-300', border: 'border-emerald-500/30' },
+  cancelled: { bg: 'bg-red-500/10', text: 'text-red-300', border: 'border-red-500/30' },
 };
 
 export default function Requests() {
   const queryClient = useQueryClient();
   const [view, setView] = useState('list');
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [statusGroup, setStatusGroup] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('');
-  const [driverFilter, setDriverFilter] = useState('all');
-  const [search, setSearch] = useState('');
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlId = urlParams.get('id');
+  const [selectedId, setSelectedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['transport-requests'],
     queryFn: () => base44.entities.TransportRequest.list('-created_date', 1000),
   });
 
-  const urlRequest = urlId ? requests.find(r => r.id === urlId) : null;
-  if (urlRequest && view === 'list' && !selectedRequest) {
-    setSelectedRequest(urlRequest);
-    setView('detail');
-  }
-
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.TransportRequest.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['transport-requests'] }); setView('list'); },
+  const deleteRequest = useMutation({
+    mutationFn: id => base44.entities.TransportRequest.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transport-requests'] }),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TransportRequest.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['transport-requests'] }); setView('list'); setSelectedRequest(null); },
-  });
-
-  const uniqueDrivers = [...new Set(requests.filter(r => r.assigned_driver_name).map(r => r.assigned_driver_name))];
-
-  const filtered = useMemo(() => {
-    return requests.filter(r => {
-      if (statusGroup !== 'all' && STATUS_GROUPS[statusGroup] && !STATUS_GROUPS[statusGroup].includes(r.status)) return false;
-      if (priorityFilter !== 'all' && r.priority !== priorityFilter) return false;
-      if (dateFilter && r.request_date !== dateFilter) return false;
-      if (driverFilter !== 'all' && r.assigned_driver_name !== driverFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return r.participant_name?.toLowerCase().includes(q) || r.pickup_location?.toLowerCase().includes(q) || r.dropoff_location?.toLowerCase().includes(q);
-      }
-      return true;
-    });
-  }, [requests, statusGroup, priorityFilter, dateFilter, driverFilter, search]);
-
-  const counts = useMemo(() => ({
-    all: requests.length,
-    needs_action: requests.filter(r => STATUS_GROUPS.needs_action.includes(r.status)).length,
-    assigned: requests.filter(r => STATUS_GROUPS.assigned.includes(r.status)).length,
-    active: requests.filter(r => STATUS_GROUPS.active.includes(r.status)).length,
-    completed: requests.filter(r => r.status === 'completed').length,
-    issues: requests.filter(r => STATUS_GROUPS.issues.includes(r.status)).length,
-  }), [requests]);
-
-  const handleSave = async (data) => {
-    if (selectedRequest) {
-      await updateMutation.mutateAsync({ id: selectedRequest.id, data });
-    } else {
-      await createMutation.mutateAsync(data);
+  const filteredRequests = useMemo(() => {
+    let result = requests;
+    if (statusFilter !== 'all') result = result.filter(r => r.status === statusFilter);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(r => 
+        r.participant_name?.toLowerCase().includes(term) ||
+        r.pickup_location?.toLowerCase().includes(term) ||
+        r.dropoff_location?.toLowerCase().includes(term)
+      );
     }
-  };
+    return result;
+  }, [requests, searchTerm, statusFilter]);
 
-  if (view === 'form') {
-    return <RequestForm existingRequest={selectedRequest} onSave={handleSave} onCancel={() => { setView('list'); setSelectedRequest(null); }} />;
-  }
+  const selectedRequest = requests.find(r => r.id === selectedId);
+
+  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
 
   if (view === 'detail' && selectedRequest) {
-    return (
-      <RequestDetail
-        request={selectedRequest}
-        onBack={() => { setView('list'); setSelectedRequest(null); window.history.replaceState({}, '', '/requests'); }}
-      />
-    );
+    return <RequestDetail request={selectedRequest} onClose={() => setView('list')} />;
+  }
+
+  if (view === 'form') {
+    return <RequestForm existingRequest={selectedRequest} onClose={() => { setView('list'); setSelectedId(null); }} />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Ride Requests</h1>
-          <p className="text-sm font-medium text-muted-foreground mt-2">{filtered.length} of {requests.length} requests shown</p>
+      <PremiumPageHeader 
+        title="Ride Requests" 
+        subtitle={`${filteredRequests.length} total`}
+      >
+        <div className="flex gap-2">
+          <Button onClick={() => setView('form')} className="bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4 mr-2" /> New Request
+          </Button>
         </div>
-        <Button onClick={() => { setSelectedRequest(null); setView('form'); }} className="gap-2">
-          <Plus className="w-4 h-4" /> New Request
-        </Button>
+      </PremiumPageHeader>
+
+      <div className="flex gap-3 flex-wrap">
+        <div className="flex-1 min-w-64">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name, location..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pl-9 bg-input border-border"
+            />
+          </div>
+        </div>
+        <select 
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="px-4 py-2 rounded-lg border border-border bg-input text-foreground text-sm"
+        >
+          <option value="all">All Statuses</option>
+          {Object.keys(statusColors).map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+        </select>
       </div>
 
-      {/* Status Group Tabs */}
-       <div className="flex flex-wrap gap-2.5">
-         {Object.entries(counts).map(([key, count]) => (
-           <button
-             key={key}
-             onClick={() => setStatusGroup(key)}
-             className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all capitalize shadow-sm
-               ${statusGroup === key 
-                 ? 'bg-primary text-primary-foreground border-primary shadow-md' 
-                 : 'bg-card border-border/60 text-muted-foreground hover:border-primary/50 hover:shadow-sm'}`}
-           >
-             {key.replace(/_/g, ' ')} <span className="ml-1.5 opacity-75 font-medium">{count}</span>
-           </button>
-         ))}
-       </div>
-
-      {/* Filters Row */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Filter className="w-4 h-4 text-muted-foreground" />
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search rider or address…" className="pl-9 h-8 w-48 text-xs" value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="h-8 px-2 rounded-md border border-input bg-transparent text-xs" />
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="h-8 w-32 text-xs"><SelectValue placeholder="Priority" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priority</SelectItem>
-            <SelectItem value="urgent">Urgent</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="standard">Standard</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={driverFilter} onValueChange={setDriverFilter}>
-          <SelectTrigger className="h-8 w-36 text-xs"><SelectValue placeholder="All Drivers" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Drivers</SelectItem>
-            {uniqueDrivers.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        {(dateFilter || priorityFilter !== 'all' || driverFilter !== 'all' || search) && (
-          <button
-            onClick={() => { setDateFilter(''); setPriorityFilter('all'); setDriverFilter('all'); setSearch(''); }}
-            className="text-xs text-muted-foreground hover:text-foreground underline"
-          >
-            Clear filters
-          </button>
-        )}
+      <div className="grid gap-3">
+        {filteredRequests.map(request => {
+          const colors = statusColors[request.status] || statusColors.pending;
+          return (
+            <div 
+              key={request.id}
+              className="board-card cursor-pointer group border-l-4 transition-all"
+              style={{ borderLeftColor: request.priority === 'urgent' ? '#F87171' : request.priority === 'high' ? '#FBBF24' : '#60A5FA' }}
+              onClick={() => { setSelectedId(request.id); setView('detail'); }}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-white">{request.participant_name}</h3>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${colors.bg} ${colors.text}`}>
+                      {request.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-primary/60" />
+                      <span>{request.pickup_location} → {request.dropoff_location}</span>
+                    </div>
+                    {request.pickup_time && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3 h-3 text-amber-400/60" />
+                        <span>{request.pickup_time}</span>
+                      </div>
+                    )}
+                    {request.assigned_driver_name && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-3 h-3 text-purple-400/60" />
+                        <span>{request.assigned_driver_name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={e => { e.stopPropagation(); setSelectedId(request.id); setView('form'); }}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={e => { e.stopPropagation(); deleteRequest.mutate(request.id); }}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-32">
-          <div className="w-6 h-6 border-2 border-muted border-t-primary rounded-full animate-spin" />
+      {filteredRequests.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <AlertCircle className="w-12 h-12 text-muted-foreground/50 mb-3" />
+          <p className="text-muted-foreground">No requests found</p>
         </div>
-      ) : (
-        <RideTable rides={filtered} onRowClick={r => { setSelectedRequest(r); setView('detail'); }} />
       )}
     </div>
   );

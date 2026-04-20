@@ -11,7 +11,8 @@ import {
   User, Car, Truck, Brain, AlertTriangle, Loader2, CheckCircle2,
   BarChart3, Zap, RefreshCw
 } from 'lucide-react';
-import StatCard from '../components/dispatch/StatCard';
+import StatCard from '../components/premium/StatCard';
+import PremiumPageHeader from '../components/premium/PremiumPageHeader';
 
 const FUNDING_LABELS = {
   nonprofit_operating_budget: 'Nonprofit Budget',
@@ -267,16 +268,15 @@ export default function CostTracking() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cost & Funding Tracking</h1>
-          <p className="text-sm text-muted-foreground mt-1">Full operational cost visibility across riders, drivers, vehicles, and funding sources</p>
-        </div>
-        <Button onClick={handleAiAlert} disabled={aiLoading} className="gap-2">
+      <PremiumPageHeader 
+        title="Cost & Funding Tracking" 
+        subtitle="Full operational cost visibility across riders, drivers, vehicles, and funding sources"
+      >
+        <Button onClick={handleAiAlert} disabled={aiLoading} className="bg-primary gap-2">
           {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
           {aiLoading ? 'Analyzing…' : 'AI Cost Analysis'}
         </Button>
-      </div>
+      </PremiumPageHeader>
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
