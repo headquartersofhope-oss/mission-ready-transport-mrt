@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import LocationPermissionPrompt from '../components/geolocation/LocationPermissionPrompt';
+import DriverRouteMap from '../components/driver/DriverRouteMap';
 
 const STATUS_ACTIONS = {
   driver_assigned: [{ label: 'Mark En Route →', status: 'en_route', variant: 'default' }],
@@ -316,6 +317,11 @@ export default function DriverBoard() {
 
       {/* Location Tracking Prompt */}
       <LocationPermissionPrompt />
+
+      {/* Route Map */}
+      {myRides.today.length > 0 && (
+        <DriverRouteMap rides={myRides.today} driverLocation={driverProfile} />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3">

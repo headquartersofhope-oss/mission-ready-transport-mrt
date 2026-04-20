@@ -1,19 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2, MapPin } from 'lucide-react';
 
-// Custom marker icons
-const driverIcon = new L.Icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+// Blue driver icon
+const createDriverIcon = () => new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCAzMiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNiIgZmlsbD0iIzNCAODJGNiIvPjxwYXRoIGQ9Ik0xNiAyOEMyMCAzMiAyNCAzNiAyNCA0MkMyNCA0NSAyMSA0OCAxNiA0OEM5IDQ4IDggNDUgOCA0MkM4IDM2IDEyIDMyIDE2IDI4WiIgZmlsbD0iIzNCAODJGNiIvPjwvc3ZnPg==',
+  iconSize: [32, 48],
+  iconAnchor: [16, 48],
+  popupAnchor: [0, -48],
 });
 
 export default function DispatchMap() {
@@ -90,8 +88,9 @@ export default function DispatchMap() {
                   ref={mapRef}
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; OpenStreetMap contributors'
+                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; OpenStreetMap contributors, &copy; CARTO'
+                    maxZoom={20}
                   />
                   {drivers.map((driver) => {
                     if (!driver.latitude || !driver.longitude) return null;
@@ -102,14 +101,14 @@ export default function DispatchMap() {
                       <Marker
                         key={driver.id}
                         position={[driver.latitude, driver.longitude]}
-                        icon={driverIcon}
+                        icon={createDriverIcon()}
                       >
                         <Popup>
                           <div className="text-xs space-y-1">
                             <p className="font-semibold">{driver.driver_name || 'Driver'}</p>
                             <p>Status: <span className="capitalize font-semibold">{driver.current_status}</span></p>
                             {driver.speed_mph && <p>Speed: {driver.speed_mph.toFixed(1)} mph</p>}
-                            <p className="text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {minutesAgo < 1 ? 'Just now' : `${minutesAgo}m ago`}
                             </p>
                           </div>
