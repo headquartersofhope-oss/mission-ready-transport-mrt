@@ -1,88 +1,78 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import Anthropic from 'npm:@anthropic-ai/sdk@0.24.0';
+
+const client = new Anthropic({
+  apiKey: Deno.env.get('ANTHROPIC_API_KEY'),
+});
+
+const SYSTEM_CONTEXT = `You are the MRT Connect customer service and booking assistant. 
+You help visitors understand and book transportation services with a friendly, helpful tone.
+
+MRT Services Available:
+- Passenger Transport: Safe, reliable rides for individuals and groups
+- Specimen Delivery: Secure medical specimen transport throughout Austin TX
+- Veteran Transport: Specialized transport for veteran community members
+
+Service Area: Austin, Texas and surrounding areas
+Hours: Monday-Friday 6 AM - 6 PM
+Contact: support@mrt-connect.com | 512-555-0123
+
+Your role:
+- Answer questions about MRT services
+- Help visitors understand passenger transport, specimen delivery, and veteran transport options
+- Guide people through the booking process
+- Collect name and contact info for booking inquiries
+- Direct urgent needs to the MRT team
+- Maintain a friendly, professional tone
+- Be clear about what services are available
+
+Do NOT:
+- Discuss internal operational details or driver information
+- Provide real-time tracking (not available to public)
+- Promise specific pricing (direct to contact page)
+- Share internal business processes
+
+When collecting booking info, ask for:
+1. Full name
+2. Phone number
+3. Email (optional but helpful)
+4. Service type interest
+5. General description of need`;
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Only accept POST
+    if (req.method !== 'POST') {
+      return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
 
-    const { userRole } = await req.json();
+    const { messages } = await req.json();
+    
+    if (!messages || !Array.isArray(messages)) {
+      return Response.json({ error: 'Invalid request: messages array required' }, { status: 400 });
+    }
 
-    // Fetch all live data
-    const [requests, drivers, vehicles, incidents] = await Promise.all([
-      base44.entities.TransportRequest.list(),
-      base44.entities.Driver.list(),
-      base44.entities.Vehicle.list(),
-      base44.entities.Incident.list(),
-    ]);
+    // Call Claude
+    const response = await client.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      system: SYSTEM_CONTEXT,
+      messages: messages.map(m => ({
+        role: m.role,
+        content: m.content,
+      })),
+    });
 
-    // Filter today's rides
-    const today = new Date().toISOString().split('T')[0];
-    const todaysRides = requests.filter(r => r.request_date === today);
-
-    // Compute metrics
-    const activeRidesCount = todaysRides.filter(r => ['scheduled', 'en_route', 'driver_assigned'].includes(r.status)).length;
-    const confirmedCount = todaysRides.filter(r => r.status === 'confirmed').length;
-    const pendingCount = todaysRides.filter(r => r.status === 'pending').length;
-    const completedCount = todaysRides.filter(r => r.status === 'completed').length;
-    const driversOnDuty = drivers.filter(d => d.availability === 'on_duty').length;
-    const vehiclesActive = vehicles.filter(v => v.service_status === 'available').length;
-    const openIncidents = incidents.filter(i => i.status === 'open').length;
-    const unassignedRides = todaysRides.filter(r => !r.assigned_driver_name).length;
-
-    // Upcoming in 24h
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    const upcomingRides = requests.filter(r => r.request_date >= today && r.request_date <= tomorrow && r.status !== 'completed').length;
-
-    // Build brief based on role
-    let briefSummary = '';
-    let fullBrief = `I am Rodney Jones, super admin of RE Jones Global. Here is my Mission Ready Transport live report as of ${new Date().toISOString()}.
-
-DISPATCH SUMMARY:
-- Today's Scheduled Rides: ${todaysRides.length}
-- Active Rides (En Route/Assigned): ${activeRidesCount}
-- Confirmed vs Pending: ${confirmedCount} confirmed, ${pendingCount} pending
-- Completed Today: ${completedCount}
-
-FLEET STATUS:
-- Drivers On Duty: ${driversOnDuty}
-- Vehicles Active: ${vehiclesActive}
-- Open Incidents: ${openIncidents}
-
-OPERATIONAL ALERTS:
-- Rides with No Driver Assigned: ${unassignedRides}
-- Upcoming Rides (Next 24h): ${upcomingRides}
-
-SYSTEM HEALTH:
-- Average Pickup Adherence: 94%
-- Response Status: Operational`;
-
-    if (userRole === 'super_admin') {
-      briefSummary = `FLEET: ${driversOnDuty}/${drivers.length} drivers on duty, ${vehiclesActive}/${vehicles.length} vehicles active. DISPATCH: ${activeRidesCount} active, ${unassignedRides} unassigned. HEALTH: ${openIncidents} incidents, 94% pickup adherence.`;
-    } else if (userRole === 'dispatcher') {
-      briefSummary = `TODAY: ${todaysRides.length} rides (${confirmedCount} confirmed, ${pendingCount} pending). UNASSIGNED: ${unassignedRides}. DRIVERS: ${driversOnDuty} on duty.`;
+    const assistantMessage = response.content[0];
+    if (assistantMessage.type !== 'text') {
+      return Response.json({ error: 'Unexpected response type' }, { status: 500 });
     }
 
     return Response.json({
-      briefSummary,
-      fullBrief,
-      metrics: {
-        todaysRidesCount: todaysRides.length,
-        activeRidesCount,
-        confirmedCount,
-        pendingCount,
-        completedCount,
-        driversOnDuty,
-        vehiclesActive,
-        openIncidents,
-        unassignedRides,
-        upcomingRides,
-      },
+      content: assistantMessage.text,
+      stop_reason: response.stop_reason,
     });
   } catch (error) {
+    console.error('AI Assistant error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

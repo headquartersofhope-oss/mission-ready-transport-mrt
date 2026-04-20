@@ -1,118 +1,135 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Copy, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 
-export default function AppAssistant({ userRole = 'dispatcher' }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [briefData, setBriefData] = useState(null);
+export default function AppAssistant() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: 'Hi! 👋 I\'m the MRT Connect booking assistant. How can I help you today? You can ask about our services, get help booking a ride, or contact our team.',
+    },
+  ]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const panelRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  const generateBrief = async () => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = { role: 'user', content: input };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput('');
     setLoading(true);
+
     try {
-      const response = await base44.functions.invoke('aiAssistant', { userRole });
-      setBriefData(response.data);
+      const response = await fetch('/api/functions/aiAssistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+
+      if (!response.ok) throw new Error('Failed to get response');
+      const data = await response.json();
+      setMessages([...newMessages, { role: 'assistant', content: data.content }]);
     } catch (error) {
-      toast.error('Failed to generate brief');
+      console.error('Error:', error);
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error. Please try again or contact our team at support@mrt-connect.com.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const copyFullBrief = () => {
-    if (briefData?.fullBrief) {
-      navigator.clipboard.writeText(briefData.fullBrief);
-      toast.success('Brief copied to clipboard');
-    }
-  };
-
-  const handleBriefClaude = () => {
-    if (briefData?.fullBrief) {
-      window.open(`https://claude.ai`, '_blank');
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (panelRef.current && !panelRef.current.contains(e.target) && !e.target.closest('[data-assistant-trigger]')) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
   return (
     <>
       {/* Floating Button */}
-      <button
-        data-assistant-trigger
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (!isOpen && !briefData) generateBrief();
-        }}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-40 active:scale-95"
-        title="AI Assistant"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
-
-      {/* Brief Panel */}
-      {isOpen && (
-        <div
-          ref={panelRef}
-          className="fixed bottom-24 right-6 w-96 bg-card border border-border/60 rounded-lg shadow-2xl z-50 p-6 max-h-96 overflow-y-auto"
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-40"
+          aria-label="Open chat"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground">MRT Live Report</h3>
+          <MessageCircle className="w-6 h-6" />
+        </button>
+      )}
+
+      {/* Chat Window */}
+      {open && (
+        <div className="fixed bottom-6 right-6 w-80 h-96 bg-card border border-border rounded-lg shadow-2xl flex flex-col z-50 overflow-hidden">
+          {/* Header */}
+          <div className="bg-[#3B82F6] text-white p-4 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-sm">MRT Connect</h3>
+              <p className="text-xs opacity-90">Booking Assistant</p>
+            </div>
             <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-muted rounded"
+              onClick={() => setOpen(false)}
+              className="p-1 hover:bg-white/20 rounded transition"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : briefData ? (
-            <>
-              <div className="text-xs text-muted-foreground mb-4 whitespace-pre-wrap leading-relaxed">
-                {briefData.briefSummary}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={handleBriefClaude}
-                  className="flex-1 text-xs"
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-[#3B82F6] text-white rounded-br-none'
+                      : 'bg-muted text-foreground rounded-bl-none'
+                  }`}
                 >
-                  Brief Claude
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={copyFullBrief}
-                  className="flex-1 text-xs"
-                >
-                  <Copy className="w-3 h-3 mr-1" /> Copy
-                </Button>
+                  {msg.content}
+                </div>
               </div>
-            </>
-          ) : (
-            <Button
-              onClick={generateBrief}
-              className="w-full"
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-lg p-3">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-3 border-t border-border bg-card flex gap-2">
+            <Input
+              placeholder="Type a message..."
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleSend()}
               disabled={loading}
+              className="text-sm bg-input border-border"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              size="icon"
+              className="bg-[#3B82F6] hover:bg-[#2563EB]"
             >
-              Generate Brief
+              <Send className="w-4 h-4" />
             </Button>
-          )}
+          </div>
         </div>
       )}
     </>
