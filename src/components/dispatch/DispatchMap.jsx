@@ -1,23 +1,9 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function DispatchMap() {
-  const [loading, setLoading] = useState(false);
-  const [drivers, setDrivers] = useState([]);
-
-  const loadDriverLocations = async () => {
-    setLoading(true);
-    try {
-      const locations = await base44.entities.DriverLocation.list('-last_update', 100);
-      setDrivers(locations);
-    } catch (err) {
-      console.error('Failed to load driver locations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="w-full">
@@ -29,20 +15,7 @@ export default function DispatchMap() {
               Live Driver Tracking Map
             </CardTitle>
           </div>
-          <Button 
-            onClick={loadDriverLocations} 
-            disabled={loading} 
-            size="sm" 
-            variant="outline"
-            className="gap-1"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-            Refresh
-          </Button>
+
         </CardHeader>
         <CardContent className="p-0">
           {drivers.length === 0 ? (
