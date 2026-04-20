@@ -1,48 +1,23 @@
-import { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
-import L from 'leaflet';
-import { base44 } from '@/api/base44Client';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2, MapPin } from 'lucide-react';
 
-// Blue driver icon
-const createDriverIcon = () => new L.Icon({
-  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCAzMiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNiIgZmlsbD0iIzNCAODJGNiIvPjxwYXRoIGQ9Ik0xNiAyOEMyMCAzMiAyNCAzNiAyNCA0MkMyNCA0NSAyMSA0OCAxNiA0OEM5IDQ4IDggNDUgOCA0MkM4IDM2IDEyIDMyIDE2IDI4WiIgZmlsbD0iIzNCAODJGNiIvPjwvc3ZnPg==',
-  iconSize: [32, 48],
-  iconAnchor: [16, 48],
-  popupAnchor: [0, -48],
-});
-
 export default function DispatchMap() {
-  const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [mapCenter, setMapCenter] = useState([41.8781, -87.6298]); // Chicago
-  const mapRef = useRef(null);
+  const [drivers, setDrivers] = useState([]);
 
   const loadDriverLocations = async () => {
     setLoading(true);
     try {
       const locations = await base44.entities.DriverLocation.list('-last_update', 100);
       setDrivers(locations);
-      
-      // Center map on first driver if available
-      if (locations.length > 0 && locations[0].latitude && locations[0].longitude) {
-        setMapCenter([locations[0].latitude, locations[0].longitude]);
-      }
     } catch (err) {
       console.error('Failed to load driver locations:', err);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadDriverLocations();
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(loadDriverLocations, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="w-full">
@@ -77,47 +52,18 @@ export default function DispatchMap() {
               <p className="text-xs mt-1">Drivers must share location from their device.</p>
             </div>
           ) : (
-            <div className="flex flex-col lg:flex-row w-full gap-0">
-              {/* Map container - fixed height */}
-              <div className="flex-1 min-h-96 lg:min-h-[500px] w-full overflow-hidden">
-                <MapContainer 
-                  center={mapCenter} 
-                  zoom={13} 
-                  style={{ height: '100%', width: '100%' }}
-                  className="map-container"
-                  ref={mapRef}
-                >
-                  <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                    attribution='&copy; OpenStreetMap contributors, &copy; CARTO'
-                    maxZoom={20}
-                  />
-                  {drivers.map((driver) => {
-                    if (!driver.latitude || !driver.longitude) return null;
-                    const lastUpdateTime = new Date(driver.last_update);
-                    const minutesAgo = Math.floor((Date.now() - lastUpdateTime) / 60000);
-                    
-                    return (
-                      <Marker
-                        key={driver.id}
-                        position={[driver.latitude, driver.longitude]}
-                        icon={createDriverIcon()}
-                      >
-                        <Popup>
-                          <div className="text-xs space-y-1">
-                            <p className="font-semibold">{driver.driver_name || 'Driver'}</p>
-                            <p>Status: <span className="capitalize font-semibold">{driver.current_status}</span></p>
-                            {driver.speed_mph && <p>Speed: {driver.speed_mph.toFixed(1)} mph</p>}
-                            <p className="text-muted-foreground text-xs">
-                              {minutesAgo < 1 ? 'Just now' : `${minutesAgo}m ago`}
-                            </p>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                </MapContainer>
-              </div>
+           <div className="flex flex-col lg:flex-row w-full gap-0">
+             {/* Map container - OpenStreetMap iframe (Austin TX service area) */}
+             <div className="flex-1 w-full">
+               <iframe
+                 width="100%"
+                 height="500"
+                 frameBorder="0"
+                 src="https://www.openstreetmap.org/export/embed.html?bbox=-97.9,30.0,-97.5,30.5&layer=mapnik"
+                 style={{ border: 0 }}
+                 title="Mission Ready Transport Service Area"
+               />
+             </div>
               
               {/* Driver list sidebar */}
               <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border bg-muted/30 overflow-hidden flex flex-col">
