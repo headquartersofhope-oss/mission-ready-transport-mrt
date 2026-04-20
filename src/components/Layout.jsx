@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { canAccessPage } from '@/lib/permissions';
+import AppAssistant from '@/components/ai/AppAssistant';
 
 const navSections = [
   {
@@ -165,6 +166,7 @@ export default function Layout() {
         <main className="flex-1 p-6 lg:p-8">
           <Outlet />
         </main>
+        <AppAssistant userRole={currentUser?.role} />
       </div>
     </div>
   );
