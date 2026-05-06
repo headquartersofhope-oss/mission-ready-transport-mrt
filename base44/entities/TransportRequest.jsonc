@@ -362,11 +362,51 @@
     },
     "service_zone": {
       "type": "string"
+    },
+    "pathways_global_resident_id": {
+      "type": "string",
+      "description": "Pathways master resident id (FK-style)"
+    },
+    "pathways_request_id": {
+      "type": "string",
+      "description": "Original request id from Pathways when inbound"
+    },
+    "housing_pickup_property_id": {
+      "type": "string",
+      "description": "Housing app Property id used as pickup"
+    },
+    "housing_dropoff_property_id": {
+      "type": "string",
+      "description": "Housing app Property id used as dropoff"
+    },
+    "last_synced_to_pathways_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_synced_to_housing_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": ["never", "synced", "pending", "failed", "standalone"],
+      "default": "never"
+    },
+    "source_app": {
+      "type": "string",
+      "enum": ["mrt", "mrt_website", "pathways", "housing", "walk_in"],
+      "default": "mrt",
+      "description": "Where this request originated"
     }
   },
   "required": [
     "request_date",
     "pickup_location",
     "dropoff_location"
+  ],
+  "indexes": [
+    { "fields": ["pathways_global_resident_id"] },
+    { "fields": ["pathways_request_id"] },
+    { "fields": ["sync_status"] }
   ]
 }

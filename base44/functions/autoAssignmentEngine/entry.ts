@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { ride_id } = body;
+  const { ride_id, finalize } = body;
 
   try {
     const ride = await base44.entities.TransportRequest.get(ride_id);
@@ -121,9 +121,27 @@ Deno.serve(async (req) => {
     const topDriver = scored[0];
     const recommendedVehicle = vehicleOptions[0];
 
+    // If finalize=true and we have a confident top driver, persist assignment + notify Pathways
+    let finalizedAssignment: any = null;
+    if (finalize && topDriver && topDriver.score >= 75) {
+      try {
+        finalizedAssignment = await base44.entities.TransportRequest.update(ride.id, {
+          assigned_driver_id: topDriver.driver_id,
+          assigned_driver_name: topDriver.driver_name,
+          assigned_vehicle_id: recommendedVehicle?.vehicle_id || null,
+          assigned_vehicle_name: recommendedVehicle?.vehicle_name || null,
+          status: 'driver_assigned',
+        });
+        fireAndForgetNotify(ride.id, 'driver_assigned');
+      } catch (e) {
+        // never block on notify
+      }
+    }
+
     return Response.json({
       request_id: ride_id,
       status: 'success',
+      finalized: !!finalizedAssignment,
       recommendation: {
         confidence: topDriver?.score >= 80 ? 'high' : topDriver?.score >= 50 ? 'medium' : 'low',
         score: topDriver?.score,
@@ -139,3 +157,17 @@ Deno.serve(async (req) => {
     return Response.json({ error: err.message }, { status: 500 });
   }
 });
+
+// Fire-and-forget Pathways notify; never blocks, never throws.
+function fireAndForgetNotify(trip_id: string, status: string) {
+  try {
+    const base = Deno.env.get('MRT_FUNCTIONS_BASE_URL');
+    if (!base) return;
+    const url = `${base.replace(/\/$/, '')}/functions/notifyPathwaysOfTrip`;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trip_id, status }),
+    }).catch(() => {});
+  } catch (_) {}
+}
