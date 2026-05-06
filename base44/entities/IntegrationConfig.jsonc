@@ -1,0 +1,33 @@
+{
+  "name": "IntegrationConfig",
+  "type": "object",
+  "properties": {
+    "app_name": {
+      "type": "string",
+      "enum": ["pathways", "housing", "drive", "mrt_website"],
+      "description": "Peer app this config addresses"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Base URL for outbound calls, overrides env if set"
+    },
+    "shared_secret_env_var_name": {
+      "type": "string",
+      "description": "Env var that holds the shared secret for this peer"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_health_check": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_health_status": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "down", "unknown"],
+      "default": "unknown"
+    }
+  },
+  "required": ["app_name"]
+}

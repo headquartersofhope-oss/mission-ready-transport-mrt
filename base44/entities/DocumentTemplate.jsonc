@@ -1,0 +1,29 @@
+{
+  "name": "DocumentTemplate",
+  "type": "object",
+  "properties": {
+    "template_name": {
+      "type": "string"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": ["trip_log", "driver_briefing", "incident_report", "rider_packet", "other"]
+    },
+    "drive_template_id": {
+      "type": "string",
+      "description": "Google Drive file id of the template doc"
+    },
+    "drive_template_url": {
+      "type": "string"
+    },
+    "mapping_json": {
+      "type": "object",
+      "description": "Field mapping from source entity to template placeholders"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": ["template_name", "document_type"]
+}

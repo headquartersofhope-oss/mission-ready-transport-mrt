@@ -73,10 +73,39 @@
       "type": "string"
     },
     "linked_house": {
-      "type": "string"
+      "type": "string",
+      "description": "Legacy free-text. Replaced by housing_property_id / housing_bed_id."
     },
     "linked_employer": {
-      "type": "string"
+      "type": "string",
+      "description": "Legacy free-text. Replaced by pathways_global_resident_id linkage."
+    },
+    "pathways_global_resident_id": {
+      "type": "string",
+      "description": "Master resident id from Pathways. FK-style; indexed."
+    },
+    "housing_property_id": {
+      "type": "string",
+      "description": "FK to Housing app Property"
+    },
+    "housing_bed_id": {
+      "type": "string",
+      "description": "FK to Housing app Bed"
+    },
+    "last_synced_to_pathways_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sync_status_pathways": {
+      "type": "string",
+      "enum": ["never", "synced", "pending", "failed", "standalone"],
+      "default": "never"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["mrt", "website", "pathways", "housing", "walk_in"],
+      "default": "mrt",
+      "description": "Where this participant first entered the system"
     },
     "eligibility_notes": {
       "type": "string"
@@ -120,5 +149,10 @@
   "required": [
     "first_name",
     "last_name"
+  ],
+  "indexes": [
+    { "fields": ["pathways_global_resident_id"] },
+    { "fields": ["phone"] },
+    { "fields": ["email"] }
   ]
 }

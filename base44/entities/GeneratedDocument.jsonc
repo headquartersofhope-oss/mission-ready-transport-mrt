@@ -1,0 +1,40 @@
+{
+  "name": "GeneratedDocument",
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": "string"
+    },
+    "source_entity_type": {
+      "type": "string",
+      "description": "e.g. TransportRequest, Incident"
+    },
+    "source_entity_id": {
+      "type": "string"
+    },
+    "global_resident_id": {
+      "type": "string",
+      "description": "Pathways master id when applicable"
+    },
+    "drive_file_id": {
+      "type": "string"
+    },
+    "drive_file_url": {
+      "type": "string"
+    },
+    "drive_folder_id": {
+      "type": "string"
+    },
+    "signature_status": {
+      "type": "string",
+      "enum": ["not_required", "pending", "signed", "declined"],
+      "default": "not_required"
+    },
+    "audit_chain": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Append-only chain of access/sign events"
+    }
+  },
+  "required": ["template_id", "source_entity_type", "source_entity_id"]
+}
