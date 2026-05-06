@@ -1,0 +1,63 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "description": "e.g. inbound_received, outbound_sent, outbound_failed, queued, retried"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "TransportRequest, Participant, Incident, etc."
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Acting user, or 'system' for service-role calls"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Full request/response payload snapshot"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "error": {
+      "type": "string"
+    },
+    "target_app": {
+      "type": "string",
+      "enum": ["pathways", "housing", "drive", "mrt_website", "mrt", "walk_in", "other"],
+      "description": "Which app was the source or destination"
+    },
+    "latency_ms": {
+      "type": "number",
+      "description": "Round-trip latency for outbound calls"
+    },
+    "external_idempotency_key": {
+      "type": "string",
+      "description": "Indexed for dedup across inbound/outbound retries"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["action_type"],
+  "rls": {
+    "read": {
+      "role": ["admin", "super_admin"]
+    },
+    "write": {
+      "service_role_only": true
+    }
+  },
+  "indexes": [
+    { "fields": ["external_idempotency_key"] },
+    { "fields": ["entity_type", "entity_id"] },
+    { "fields": ["target_app", "created_at"] }
+  ]
+}

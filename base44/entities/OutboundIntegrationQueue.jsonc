@@ -1,0 +1,57 @@
+{
+  "name": "OutboundIntegrationQueue",
+  "type": "object",
+  "properties": {
+    "target_app": {
+      "type": "string",
+      "enum": ["pathways", "housing", "drive"],
+      "description": "Destination app for this outbound call"
+    },
+    "endpoint_path": {
+      "type": "string",
+      "description": "Function path on the target, e.g. /functions/receiveTripFromMRT"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Full body to POST when retried"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "in_flight", "succeeded", "failed", "dead_lettered"],
+      "default": "pending"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "last_attempt_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Unique key forwarded to receiver to suppress duplicates"
+    },
+    "global_resident_id": {
+      "type": "string",
+      "description": "Pathways master resident id, optional, indexed for lookups"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "succeeded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["target_app", "endpoint_path", "idempotency_key"],
+  "indexes": [
+    { "fields": ["idempotency_key"], "unique": true },
+    { "fields": ["global_resident_id"] },
+    { "fields": ["status", "target_app"] }
+  ]
+}

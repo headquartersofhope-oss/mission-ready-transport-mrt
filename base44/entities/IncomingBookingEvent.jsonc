@@ -1,0 +1,43 @@
+{
+  "name": "IncomingBookingEvent",
+  "type": "object",
+  "properties": {
+    "source_app": {
+      "type": "string",
+      "enum": ["mrt_website", "pathways", "housing", "walk_in"],
+      "description": "Where this booking originated"
+    },
+    "external_request_id": {
+      "type": "string",
+      "description": "Source app's id for the booking, useful for cross-ref"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Raw inbound body for replay/debug"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Required, unique. Used to suppress duplicates."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["received", "converted", "duplicate", "error"],
+      "default": "received"
+    },
+    "resulting_transport_request_id": {
+      "type": "string"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "required": ["source_app", "idempotency_key"],
+  "indexes": [
+    { "fields": ["idempotency_key"], "unique": true },
+    { "fields": ["source_app", "status"] }
+  ]
+}

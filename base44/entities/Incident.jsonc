@@ -75,6 +75,20 @@
     },
     "escalated_to": {
       "type": "string"
+    },
+    "pathways_global_resident_id": {
+      "type": "string",
+      "description": "Pathways master resident id for cross-app correlation"
+    },
+    "notify_pathways": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, notifyPathwaysOfIncident fires after create"
+    },
+    "notify_housing": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, Housing is notified of safety-relevant incidents"
     }
   },
   "required": [
