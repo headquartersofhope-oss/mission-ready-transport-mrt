@@ -1,0 +1,59 @@
+{
+  "name": "HIPAAConsent",
+  "type": "object",
+  "properties": {
+    "participant_id": {
+      "type": "string",
+      "description": "Participant who gave consent"
+    },
+    "participant_name": {
+      "type": "string"
+    },
+    "consent_type": {
+      "type": "string",
+      "enum": [
+        "pathways_data_sharing",
+        "medical_trip_access",
+        "case_manager_view"
+      ],
+      "description": "Type of consent given"
+    },
+    "consented": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether consent was granted"
+    },
+    "consent_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When consent was given"
+    },
+    "consent_revoked_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When consent was revoked (if applicable)"
+    },
+    "consented_by": {
+      "type": "string",
+      "description": "Email of person who documented consent"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "paper_form",
+        "digital_signature",
+        "verbal_witnessed"
+      ],
+      "description": "How consent was obtained"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional consent details"
+    }
+  },
+  "required": [
+    "participant_id",
+    "consent_type",
+    "consent_date"
+  ]
+}

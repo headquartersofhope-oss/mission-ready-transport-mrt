@@ -14,6 +14,7 @@ import {
 import RideTable from '../components/dispatch/RideTable';
 import UnassignedQueue from '../components/dispatch/UnassignedQueue';
 import DispatchMap from '../components/dispatch/DispatchMap';
+import PathwaysEcosystem from '../components/compliance/PathwaysEcosystem';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import PremiumPageHeader from '../components/premium/PremiumPageHeader';
@@ -233,6 +234,12 @@ export default function DispatchDashboard() {
 
       {/* Live Driver Tracking Map */}
       <DispatchMap />
+
+      {/* Pathways Ecosystem Integration */}
+      <div>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Pathways Hub Integration</p>
+        <PathwaysEcosystem />
+      </div>
 
       {/* Ride Panels */}
       <Tabs defaultValue="schedule" className="space-y-5">

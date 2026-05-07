@@ -1,0 +1,81 @@
+{
+  "name": "ComplianceTracker",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "vehicle",
+        "program"
+      ],
+      "description": "What this compliance record tracks"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Reference to driver, vehicle, or program"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Name of driver/vehicle/program"
+    },
+    "compliance_category": {
+      "type": "string",
+      "enum": [
+        "hipaa",
+        "irs_501c3",
+        "texas_law",
+        "usdot",
+        "ada",
+        "workers_comp",
+        "maintenance"
+      ],
+      "description": "Category of compliance"
+    },
+    "requirement": {
+      "type": "string",
+      "description": "Specific requirement (e.g. 'Annual MVR check', 'Vehicle inspection sticker')"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When this requirement is due"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When requirement was completed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "compliant",
+        "pending",
+        "overdue",
+        "exempt"
+      ],
+      "default": "pending",
+      "description": "Current compliance status"
+    },
+    "documentation_url": {
+      "type": "string",
+      "description": "URL to proof of compliance"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "alert_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether alert was sent for overdue status"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "compliance_category",
+    "requirement",
+    "due_date"
+  ]
+}

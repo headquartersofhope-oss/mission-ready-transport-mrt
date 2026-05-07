@@ -1,0 +1,88 @@
+{
+  "name": "PathwaysSync",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "trips_summary",
+        "driver_compliance",
+        "vehicle_status",
+        "revenue_report",
+        "safety_incidents",
+        "hoh_mileage",
+        "usdot_compliance"
+      ],
+      "description": "Type of data synced to Pathways Hub"
+    },
+    "payload_summary": {
+      "type": "string",
+      "description": "Summary of data sent to Pathways Hub"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "synced",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Sync status"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of successful sync"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error details if sync failed"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_trips_month": {
+          "type": "number"
+        },
+        "hoh_program_trips": {
+          "type": "number"
+        },
+        "commercial_trips": {
+          "type": "number"
+        },
+        "active_vehicles": {
+          "type": "number"
+        },
+        "vehicles_maintenance": {
+          "type": "number"
+        },
+        "driver_compliance_rate": {
+          "type": "number"
+        },
+        "fulfillment_rate": {
+          "type": "number"
+        },
+        "revenue_month": {
+          "type": "number"
+        },
+        "hoh_miles": {
+          "type": "number"
+        },
+        "open_incidents": {
+          "type": "number"
+        },
+        "avg_trip_cost": {
+          "type": "number"
+        },
+        "revenue_per_mile": {
+          "type": "number"
+        }
+      },
+      "description": "Metrics snapshot sent to Pathways"
+    }
+  },
+  "required": [
+    "event_type",
+    "status"
+  ]
+}

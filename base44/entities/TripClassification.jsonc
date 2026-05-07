@@ -1,0 +1,76 @@
+{
+  "name": "TripClassification",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "Reference to TransportRequest"
+    },
+    "trip_type": {
+      "type": "string",
+      "enum": [
+        "HOH_Program",
+        "Commercial",
+        "Internal"
+      ],
+      "description": "Classification for IRS and revenue tracking"
+    },
+    "participant_is_hoh": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether participant is part of HOH program"
+    },
+    "is_medical_appointment": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether trip is for medical appointment (PHI)"
+    },
+    "charitable_deductible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether expenses are charitable deductible"
+    },
+    "revenue_entity": {
+      "type": "string",
+      "enum": [
+        "HOH",
+        "RE_Jones_Transport"
+      ],
+      "description": "Which entity recognizes revenue"
+    },
+    "driver_consent_granted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Driver acknowledged data sharing consent"
+    },
+    "case_manager_id": {
+      "type": "string",
+      "description": "Case manager overseeing trip (for medical)"
+    },
+    "mileage_tracked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether mileage was logged for IRS"
+    },
+    "actual_miles": {
+      "type": "number",
+      "description": "Miles for charitable mileage deduction"
+    },
+    "charitable_mileage_rate": {
+      "type": "number",
+      "description": "IRS rate applied (e.g. 0.21 for 2024)"
+    },
+    "irs_mileage_deduction": {
+      "type": "number",
+      "description": "Calculated charitable mileage deduction"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Compliance or classification notes"
+    }
+  },
+  "required": [
+    "request_id",
+    "trip_type"
+  ]
+}

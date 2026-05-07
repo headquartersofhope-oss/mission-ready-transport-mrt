@@ -1,0 +1,78 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "view",
+        "edit",
+        "delete",
+        "access",
+        "export"
+      ],
+      "description": "Type of action performed"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "participant_trip",
+        "medical_record",
+        "compliance_doc",
+        "audit_log"
+      ],
+      "description": "What resource was accessed"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "ID of accessed resource"
+    },
+    "accessed_by": {
+      "type": "string",
+      "description": "Email of user who accessed"
+    },
+    "user_role": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "dispatcher",
+        "case_manager",
+        "admin"
+      ],
+      "description": "Role of accessor"
+    },
+    "participant_id": {
+      "type": "string",
+      "description": "Participant whose data was accessed"
+    },
+    "details": {
+      "type": "string",
+      "description": "Details of action"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of access"
+    },
+    "flagged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flagged for compliance review"
+    },
+    "flag_reason": {
+      "type": "string",
+      "description": "Why this access was flagged"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access occurred"
+    }
+  },
+  "required": [
+    "action",
+    "resource_type",
+    "resource_id",
+    "accessed_by",
+    "timestamp"
+  ]
+}

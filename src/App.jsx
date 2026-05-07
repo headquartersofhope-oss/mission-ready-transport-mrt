@@ -26,6 +26,8 @@ import OperationsDiagnostic from './pages/OperationsDiagnostic';
 import RiderPortal from './pages/RiderPortal';
 import RiderLayout from './components/RiderLayout';
 import UserManagement from './pages/UserManagement';
+import ComplianceDashboard from './pages/ComplianceDashboard';
+import ComplianceSetup from './pages/ComplianceSetup';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -70,6 +72,8 @@ const AuthenticatedApp = () => {
         <Route path="/audit" element={<AuditCenter />} />
         <Route path="/ai-intelligence" element={<AiIntelligence />} />
         <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/compliance" element={<ComplianceDashboard />} />
+        <Route path="/compliance-setup" element={<ComplianceSetup />} />
       </Route>
       <Route element={<RiderLayout />}>
         <Route path="/my-rides" element={<RiderPortal />} />
