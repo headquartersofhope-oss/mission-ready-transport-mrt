@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, FileText, Truck, RefreshCw,
   DollarSign, BarChart3, Menu, X, LogOut, ChevronRight,
-  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity, Settings, Shield
+  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity, Settings, Shield, Link2
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -44,6 +44,12 @@ const navSections = [
       { path: '/reports', label: 'Reports', icon: BarChart3 },
       { path: '/ai-intelligence', label: 'AI Intelligence', icon: Brain },
       { path: '/audit', label: 'Audit Center', icon: ShieldCheck },
+    ]
+  },
+  {
+    label: 'Integrations',
+    items: [
+      { path: '/pathways', label: 'Pathways Hub', icon: Link2 },
     ]
   },
   {
