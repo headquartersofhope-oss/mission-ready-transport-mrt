@@ -1,0 +1,134 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "contract_number": {
+      "type": "string"
+    },
+    "contract_name": {
+      "type": "string"
+    },
+    "client_type": {
+      "type": "string",
+      "enum": [
+        "employer",
+        "delivery_company",
+        "medical_provider",
+        "government",
+        "nonprofit",
+        "church",
+        "other"
+      ]
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "workforce_transport",
+        "package_delivery",
+        "medical_delivery",
+        "contract_route",
+        "mixed_services"
+      ],
+      "default": "workforce_transport"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "default": false
+    },
+    "renewal_notice_days": {
+      "type": "number",
+      "default": 30
+    },
+    "total_contract_value": {
+      "type": "number"
+    },
+    "monthly_value": {
+      "type": "number"
+    },
+    "rate_type": {
+      "type": "string",
+      "enum": [
+        "per_trip",
+        "per_mile",
+        "flat_monthly",
+        "hourly",
+        "custom"
+      ]
+    },
+    "rate_amount": {
+      "type": "number"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "net_15",
+        "net_30",
+        "net_60",
+        "prepaid",
+        "monthly"
+      ]
+    },
+    "billing_contact_email": {
+      "type": "string"
+    },
+    "service_description": {
+      "type": "string"
+    },
+    "scope_of_work": {
+      "type": "string"
+    },
+    "service_area": {
+      "type": "string"
+    },
+    "estimated_trips_monthly": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_signature",
+        "active",
+        "expired",
+        "terminated",
+        "renewed"
+      ],
+      "default": "draft"
+    },
+    "signed_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "termination_reason": {
+      "type": "string"
+    },
+    "document_url": {
+      "type": "string"
+    },
+    "account_manager": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_name",
+    "client_name",
+    "start_date"
+  ]
+}

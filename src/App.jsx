@@ -29,6 +29,11 @@ import UserManagement from './pages/UserManagement';
 import ComplianceDashboard from './pages/ComplianceDashboard';
 import ComplianceSetup from './pages/ComplianceSetup';
 import PathwaysIntegration from './pages/PathwaysIntegration';
+import EmployerCRM from './pages/EmployerCRM';
+import DonorCRM from './pages/DonorCRM';
+import ContractManagement from './pages/ContractManagement';
+import VolunteerManagement from './pages/VolunteerManagement';
+import CommunicationsHub from './pages/CommunicationsHub';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -76,6 +81,11 @@ const AuthenticatedApp = () => {
         <Route path="/compliance" element={<ComplianceDashboard />} />
         <Route path="/compliance-setup" element={<ComplianceSetup />} />
         <Route path="/pathways" element={<PathwaysIntegration />} />
+        <Route path="/employers" element={<EmployerCRM />} />
+        <Route path="/donors" element={<DonorCRM />} />
+        <Route path="/contracts" element={<ContractManagement />} />
+        <Route path="/volunteers" element={<VolunteerManagement />} />
+        <Route path="/communications" element={<CommunicationsHub />} />
       </Route>
       <Route element={<RiderLayout />}>
         <Route path="/my-rides" element={<RiderPortal />} />

@@ -1,0 +1,118 @@
+{
+  "name": "Volunteer",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "volunteer_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "admin_support",
+        "event_helper",
+        "mechanic",
+        "fundraiser",
+        "other"
+      ],
+      "default": "driver"
+    },
+    "license_number": {
+      "type": "string"
+    },
+    "license_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "vehicle_make": {
+      "type": "string"
+    },
+    "vehicle_model": {
+      "type": "string"
+    },
+    "vehicle_year": {
+      "type": "number"
+    },
+    "vehicle_plate": {
+      "type": "string"
+    },
+    "vehicle_insurance_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "background_check_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "background_check_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "clear",
+        "flagged",
+        "not_required"
+      ],
+      "default": "pending"
+    },
+    "availability_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "availability_notes": {
+      "type": "string"
+    },
+    "service_area": {
+      "type": "string"
+    },
+    "total_hours_volunteered": {
+      "type": "number",
+      "default": 0
+    },
+    "total_trips_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "referred_by": {
+      "type": "string"
+    },
+    "church_affiliation": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "pending_clearance",
+        "suspended"
+      ],
+      "default": "pending_clearance"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name",
+    "phone"
+  ]
+}

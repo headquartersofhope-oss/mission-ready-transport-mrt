@@ -1,0 +1,125 @@
+{
+  "name": "Employer",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string",
+      "enum": [
+        "healthcare",
+        "retail",
+        "warehouse",
+        "food_service",
+        "construction",
+        "hospitality",
+        "manufacturing",
+        "education",
+        "government",
+        "nonprofit",
+        "other"
+      ]
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_title": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "employee_count": {
+      "type": "number"
+    },
+    "mrt_enrolled_employees": {
+      "type": "number",
+      "default": 0
+    },
+    "partnership_type": {
+      "type": "string",
+      "enum": [
+        "workforce_transport",
+        "delivery_contract",
+        "both",
+        "prospect"
+      ],
+      "default": "prospect"
+    },
+    "contract_value_monthly": {
+      "type": "number"
+    },
+    "contract_start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "contract_end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "billing_rate": {
+      "type": "number",
+      "description": "Rate per employee transport per day"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "net_15",
+        "net_30",
+        "net_60",
+        "prepaid"
+      ],
+      "default": "net_30"
+    },
+    "preferred_pickup_times": {
+      "type": "string"
+    },
+    "work_shift_schedule": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prospect",
+        "active",
+        "paused",
+        "churned"
+      ],
+      "default": "prospect"
+    },
+    "lead_source": {
+      "type": "string",
+      "enum": [
+        "referral",
+        "cold_outreach",
+        "pathways_hub",
+        "church_partner",
+        "online",
+        "other"
+      ]
+    },
+    "next_followup_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "account_manager": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_name"
+  ]
+}

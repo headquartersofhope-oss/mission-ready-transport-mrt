@@ -1,0 +1,129 @@
+{
+  "name": "Donor",
+  "type": "object",
+  "properties": {
+    "donor_name": {
+      "type": "string"
+    },
+    "donor_type": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "church",
+        "foundation",
+        "corporation",
+        "government_grant",
+        "estate"
+      ],
+      "default": "individual"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "total_given_lifetime": {
+      "type": "number",
+      "default": 0
+    },
+    "total_given_ytd": {
+      "type": "number",
+      "default": 0
+    },
+    "last_gift_amount": {
+      "type": "number"
+    },
+    "last_gift_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "largest_gift_amount": {
+      "type": "number"
+    },
+    "giving_frequency": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "monthly",
+        "quarterly",
+        "annual",
+        "event_based"
+      ],
+      "default": "one_time"
+    },
+    "designation": {
+      "type": "string",
+      "enum": [
+        "general_operations",
+        "transport_fund",
+        "vehicle_fund",
+        "driver_training",
+        "participant_emergency",
+        "unrestricted"
+      ],
+      "default": "unrestricted"
+    },
+    "relationship_stage": {
+      "type": "string",
+      "enum": [
+        "prospect",
+        "first_time",
+        "recurring",
+        "major_donor",
+        "lapsed",
+        "champion"
+      ],
+      "default": "prospect"
+    },
+    "stewardship_level": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "mid_level",
+        "major",
+        "planned_giving"
+      ],
+      "default": "standard"
+    },
+    "communication_preference": {
+      "type": "string",
+      "enum": [
+        "email",
+        "phone",
+        "mail",
+        "none"
+      ],
+      "default": "email"
+    },
+    "next_ask_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ask_amount": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "lapsed",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "donor_name",
+    "donor_type"
+  ]
+}

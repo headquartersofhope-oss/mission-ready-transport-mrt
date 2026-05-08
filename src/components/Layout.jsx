@@ -2,7 +2,8 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, FileText, Truck, RefreshCw,
   DollarSign, BarChart3, Menu, X, LogOut, ChevronRight,
-  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity, Settings, Shield, Link2
+  UserCheck, Car, AlertTriangle, Navigation, ShieldCheck, Brain, MapPin, Activity, Settings, Shield, Link2,
+  Building2, Heart, HandHeart, MessageSquare
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -44,6 +45,16 @@ const navSections = [
       { path: '/reports', label: 'Reports', icon: BarChart3 },
       { path: '/ai-intelligence', label: 'AI Intelligence', icon: Brain },
       { path: '/audit', label: 'Audit Center', icon: ShieldCheck },
+    ]
+  },
+  {
+    label: 'CRM',
+    items: [
+      { path: '/employers', label: 'Employer Partners', icon: Building2 },
+      { path: '/donors', label: 'Donor Relations', icon: Heart },
+      { path: '/contracts', label: 'Contracts', icon: FileText },
+      { path: '/volunteers', label: 'Volunteers', icon: HandHeart },
+      { path: '/communications', label: 'Communications Hub', icon: MessageSquare },
     ]
   },
   {

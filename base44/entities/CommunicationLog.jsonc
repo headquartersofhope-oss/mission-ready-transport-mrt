@@ -1,0 +1,90 @@
+{
+  "name": "CommunicationLog",
+  "type": "object",
+  "properties": {
+    "contact_type": {
+      "type": "string",
+      "enum": [
+        "participant",
+        "employer",
+        "donor",
+        "volunteer",
+        "driver",
+        "partner",
+        "other"
+      ]
+    },
+    "contact_id": {
+      "type": "string"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "outbound",
+        "inbound"
+      ],
+      "default": "outbound"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "phone_call",
+        "text_sms",
+        "email",
+        "in_person",
+        "mail",
+        "app_notification"
+      ],
+      "default": "phone_call"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "no_answer",
+        "left_voicemail",
+        "connected",
+        "email_sent",
+        "replied",
+        "meeting_scheduled",
+        "resolved",
+        "follow_up_needed"
+      ],
+      "default": "connected"
+    },
+    "follow_up_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "follow_up_note": {
+      "type": "string"
+    },
+    "logged_by": {
+      "type": "string"
+    },
+    "communication_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "linked_request_id": {
+      "type": "string"
+    },
+    "linked_contract_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contact_type",
+    "contact_name",
+    "channel",
+    "communication_date"
+  ]
+}
