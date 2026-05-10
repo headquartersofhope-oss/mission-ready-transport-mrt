@@ -1,39 +1,43 @@
-**Welcome to your Base44 project** 
+# Mission Ready Transport — MRT Website
 
-**About**
+**Public-facing website for Mission Ready Transport LLC**
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+The Mission Ready Transport Website is the public digital presence for MRT — a modern, AI-assisted premium transportation and logistics company providing dispatch-enabled transport for organizations, operations, and people who need reliable, coordinated service.
 
-This project contains everything you need to run your app locally.
+## Company Info
+- **Legal Name:** Mission Ready Transport LLC
+- **DBA:** Mission Ready Transport / MRT
+- **Parent:** RE Jones Global LLC
+- **Contact:** rodney@rejonesglobal.com | 512-541-2395
+- **Address:** 5900 Balcones Drive, Suite 100, Austin, TX 78731
 
-**Edit the code in your local development environment**
+## Platform Features
+- Service menu and pricing information
+- Booking request forms (feeds into MRT Connect)
+- Client portal for outside agencies and organizations
+- Fleet showcase
+- Driver and safety standards
+- Coverage areas and route information
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+## Who We Serve
+- Headquarters of Hope Foundation residents
+- Government agencies and courts
+- Treatment programs and hospitals
+- Nonprofits and social service organizations
+- Private clients
 
-**Prerequisites:** 
+## Ecosystem Connection
+- Website bookings/inquiries → MRT Connect — Transport App
+- HOH resident trips coordinated via Pathways Hub OS
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
+## Development
+```bash
+git clone https://github.com/rejg-legacylabs/mission-ready-transport-mrt
+cd mission-ready-transport-mrt
+npm install
+cp .env.example .env.local
+npm run dev
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
-
-Run the app: `npm run dev`
-
-**Publish your changes**
-
-Open [Base44.com](http://Base44.com) and click on Publish.
-
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+---
+Built on [Base44](https://base44.com) | Mission Ready Transport LLC | REJG Legacy Labs LLC | RE Jones Global LLC | May 2026
