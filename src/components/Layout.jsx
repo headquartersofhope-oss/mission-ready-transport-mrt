@@ -110,7 +110,7 @@ export default function Layout() {
                 </div>
                 <div>
                 <h1 className="text-sm font-bold tracking-tight text-white">MRT</h1>
-                <p className="text-xs text-sidebar-foreground/60 font-medium">Mission Ready</p>
+                <p className="text-xs text-sidebar-foreground/60 font-medium">Mission First Transport</p>
                 </div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function Layout() {
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
           {navSections.map(section => {
             const visibleItems = section.items.filter(item => canAccessPage(currentUser?.role, item.path));
-            if (visibleItems.length === 0) return null; // Hide entire section if no items are accessible
+            if (visibleItems.length === 0) return null;
             
             return (
               <div key={section.label}>
