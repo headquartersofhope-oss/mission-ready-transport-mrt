@@ -8,15 +8,15 @@ The Mission Ready Transport Website is the public digital presence for MRT — a
 - **Legal Name:** Mission Ready Transport LLC
 - **DBA:** Mission Ready Transport / MRT
 - **Parent:** RE Jones Global LLC
-- **Contact:** rodney@rejonesglobal.com | 512-541-2395
+- **Email:** missionreadytransport1@gmail.com
+- **Phone:** 512-541-2395
 - **Address:** 5900 Balcones Drive, Suite 100, Austin, TX 78731
 
 ## Platform Features
 - Service menu and pricing information
-- Booking request forms (feeds into MRT Connect)
+- Booking request forms (feeds into MRT Connect — Transport App)
 - Client portal for outside agencies and organizations
-- Fleet showcase
-- Driver and safety standards
+- Fleet showcase and safety standards
 - Coverage areas and route information
 
 ## Who We Serve
@@ -27,7 +27,7 @@ The Mission Ready Transport Website is the public digital presence for MRT — a
 - Private clients
 
 ## Ecosystem Connection
-- Website bookings/inquiries → MRT Connect — Transport App
+- Website bookings → MRT Connect — Transport App
 - HOH resident trips coordinated via Pathways Hub OS
 
 ## Development
